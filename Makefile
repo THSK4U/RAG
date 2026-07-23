@@ -29,5 +29,7 @@ lint:
 	--disallow-untyped-defs \
 	--check-untyped-defs
 
+a:
+	@source .venv/bin/activate.fish
 
 .PHONY: all run install lint lint-strict debug clean
