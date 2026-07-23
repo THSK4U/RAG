@@ -33,3 +33,10 @@ class StudentSearchResults(BaseModel):
 class StudentSearchResultsAndAnswer(BaseModel):
     search_results: List[MinimalAnswer]
     k: int
+
+class Config(BaseModel):
+  max_chunk_size: int = 2000
+  raw_dir: str = "data/raw/vllm-0.10.1"
+  processed_dir: str = "data/processed"
+
+config = Config()
