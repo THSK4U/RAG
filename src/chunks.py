@@ -32,7 +32,7 @@ def md_chunker(file: str):
 
         selected_text = content[start:end]
 
-        if selected_text.strip() == f"# {title}":
+        if selected_text.strip() in f"# {title}":
             continue
 
         if len(selected_text) <= config.max_chunk_size and len(selected_text.strip()) > 0:
