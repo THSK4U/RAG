@@ -32,7 +32,7 @@ def md_chunker(file: str):
 
         selected_text = content[start:end]
 
-        if selected_text.strip() in f"# {title}":
+        if selected_text.strip() == f"# {title}":
             continue
 
         if len(selected_text) <= config.max_chunk_size and len(selected_text.strip()) > 0:
@@ -57,8 +57,10 @@ def md_chunker(file: str):
                         split_text.rfind("\n#### "),
                         split_text.rfind("\n##### "),
                         split_text.rfind("\n###### "),
-                        split_text.rfind("\n\n"),
                         split_text.rfind("\n"),
+                        split_text.rfind("\n\n"),
+                        split_text.rfind(" "),
+                        split_text.rfind("."),
                     )
                     if split_pos > 0:
                         end_chunk = new_start + split_pos
@@ -72,9 +74,19 @@ def md_chunker(file: str):
                         },
                         "first_character_index": new_start,
                         "last_character_index": end_chunk,
-                        # "text": content[new_start:end_chunk],
+                        "text": content[new_start:end_chunk],
                         })
-                    new_start = end_chunk
+                    segment = content[new_start:end_chunk]
+
+                    last_newline = segment.rfind("\n")
+                    last_space = segment.rfind(" ")
+
+                    if last_newline > 0:
+                        new_start += last_newline + 1
+                    elif last_space > 0:
+                        new_start += last_space + 1
+                    else:
+                        new_start = end_chunk
                 else:
                     chunks.append({
                         "file_path": file,
@@ -84,13 +96,9 @@ def md_chunker(file: str):
                         },
                         "first_character_index": new_start,
                         "last_character_index": end,
-                        # "text": content[new_start:end],
+                        "text": content[new_start:end],
                         })
-
-
-                    overlap = 100
-                    new_start = max(new_end - overlap, start)
-
+                    new_start = end
 
     return chunks
 
