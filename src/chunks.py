@@ -16,7 +16,7 @@ def md_chunker(file: str):
     splits = list(re.finditer(header_pattern, content, re.MULTILINE))
 
     span = [0] + [m.start() for m in splits] + [len(content)]
-
+    print(span)
     for i in range(len(span) - 1):
         start = span[i]
         end = span[i + 1]
@@ -43,7 +43,7 @@ def md_chunker(file: str):
                         split_text.rfind("\n"),
                     )
                     if split_pos > 0:
-                        end_chunk = split_pos
+                        end_chunk = new_start + split_pos
                     else:
                         end_chunk = new_end
                     chunks.append({
@@ -52,14 +52,13 @@ def md_chunker(file: str):
                         "last_character_index": end_chunk,
                         "text": content[new_start:end_chunk],
                         })
-                    print(new_start)
                     new_start = end_chunk
                 else:
                     chunks.append({
                         "file_path": file,
-                        "first_character_index": start,
+                        "first_character_index": new_start,
                         "last_character_index": end,
-                        "text": content[new_start:new_end],
+                        "text": content[new_start:end],
                         })
                     new_start = new_end
 
