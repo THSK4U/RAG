@@ -12,20 +12,36 @@ def md_chunker(file: str):
     with open(file, "r") as f:
         content = f.read()
 
-    header_pattern = r"(^#{1,6}\s+.*$)"
+    header_pattern = r"^(#{1,6})\s+(.*)$"
     splits = list(re.finditer(header_pattern, content, re.MULTILINE))
 
     span = [0] + [m.start() for m in splits] + [len(content)]
-    print(span)
+
+    title = ""
+    header = ""
     for i in range(len(span) - 1):
         start = span[i]
         end = span[i + 1]
+        if i > 0:
+            m = splits[i - 1]
+            hashes = m.group(1)
+            header_text = m.group(2)
+            header = header_text
+            if len(hashes) == 1:
+                title = header_text
 
         selected_text = content[start:end]
+
+        if selected_text.strip() == f"# {title}":
+            continue
 
         if len(selected_text) <= config.max_chunk_size and len(selected_text.strip()) > 0:
             chunks.append({
                 "file_path": file,
+                "metadata": {
+                    "title": title,
+                    "header": header
+                },
                 "first_character_index": start,
                 "last_character_index": end,
                 "text": selected_text,
@@ -37,8 +53,10 @@ def md_chunker(file: str):
                 if new_end < end:
                     split_text = content[new_start:new_end]
                     split_pos = max(
-                        split_text.rfind(".\n"),
-                        split_text.rfind(". "),
+                        split_text.rfind("\n### "),
+                        split_text.rfind("\n#### "),
+                        split_text.rfind("\n##### "),
+                        split_text.rfind("\n###### "),
                         split_text.rfind("\n\n"),
                         split_text.rfind("\n"),
                     )
@@ -48,19 +66,30 @@ def md_chunker(file: str):
                         end_chunk = new_end
                     chunks.append({
                         "file_path": file,
+                        "metadata": {
+                            "title": title,
+                            "header": header
+                        },
                         "first_character_index": new_start,
                         "last_character_index": end_chunk,
-                        "text": content[new_start:end_chunk],
+                        # "text": content[new_start:end_chunk],
                         })
                     new_start = end_chunk
                 else:
                     chunks.append({
                         "file_path": file,
+                        "metadata": {
+                            "title": title,
+                            "header": header
+                        },
                         "first_character_index": new_start,
                         "last_character_index": end,
-                        "text": content[new_start:end],
+                        # "text": content[new_start:end],
                         })
-                    new_start = new_end
+
+
+                    overlap = 100
+                    new_start = max(new_end - overlap, start)
 
 
     return chunks

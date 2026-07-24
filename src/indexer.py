@@ -22,8 +22,8 @@ def load_all_files():
 
         md_files = list(md_database.rglob("READ.md"))
 
-        print(md_chunker(str(md_files[0])))
-
+        res = md_chunker(str(md_files[0]))
+        print(res)
 
         # for file in md_files:
         #     md_chunker(str(file))
