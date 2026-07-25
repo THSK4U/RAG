@@ -1,45 +1,56 @@
 # 1. يجد كل ملفات .md و .py في vllm-0.10.1
-# 2. يستدعي chunker على كل ملف
+# 2. يستدعي chunker على كل ملف — بشكل متوازي (Parallel)
 # 3. يحفظ كل الـ chunks في data/processed/chunks.json
 # 4. يبني الـ BM25 index ويحفظه
 from .chunks import md_chunker, py_chunker
 from pathlib import Path
 from .models import config
+from concurrent.futures import ProcessPoolExecutor, as_completed
+import os
+
+def _chunk_md(file_str: str):
+    return md_chunker(file_str)
+
+def _chunk_py(file_str: str):
+    return py_chunker(file_str)
 
 def load_all_files():
-    try :
-        # md_database = Path(config.raw_dir)
-        # py_database = Path(config.raw_dir)
-
-
-        # md_files = list(md_database.rglob("*.md"))
-        # py_files = list(py_database.rglob("*.py"))
-
-        # print(md_chunker(str(md_files[1]))[0])
-        # print(md_chunker(str(md_files[1]))[1])
-
-        # md_database = Path("./")
-
-        # md_files = list(md_database.rglob("READ.md"))
-
-        # res = md_chunker(str(md_files[0]))
-        # print(res)
-
+    try:
+        md_database = Path(config.raw_dir)
         py_database = Path(config.raw_dir)
 
-        py_files = list(py_database.rglob("*.py"))
+        md_files = [str(f) for f in md_database.rglob("*.md")]
+        py_files = [
+            str(f) for f in py_database.rglob("*.py")
+            if not (f.name == "__init__.py" and f.stat().st_size < 100)
+            and "tests" not in f.parts
+            and not f.name.startswith("test_")
+        ]
 
-        res = py_chunker(str(py_files[0]))
-        print(res)
+        workers = min(4, 16)
 
-        # for file in md_files:
-        #     md_chunker(str(file))
+        md: list = []
+        py: list = []
 
-        # for file in py_files:
-        #     py_chunker(str(file))
+        with ProcessPoolExecutor(max_workers=workers) as executor:
+            futures = {executor.submit(_chunk_md, f): f for f in md_files}
+            for future in as_completed(futures):
+                result = future.result()
+                if result:
+                    md.extend(result)
 
+        with ProcessPoolExecutor(max_workers=workers) as executor:
+            futures = {executor.submit(_chunk_py, f): f for f in py_files}
+            for future in as_completed(futures):
+                result = future.result()
+                if result:
+                    py.extend(result)
+
+        print(f"MD chunks: {len(md)} | PY chunks: {len(py)}")
+        print(md, py)
+        return md, py
 
     except FileNotFoundError:
         raise FileNotFoundError("vllm-0.10.1 dataset files not found.\n")
-    except Exception:
-        raise Exception("Invalid dataset.\n")
+    except Exception as e:
+        raise Exception(f"Invalid dataset: {e}\n")

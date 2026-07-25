@@ -110,12 +110,13 @@ def md_chunker(file: str):
     return chunks
 
 import ast
+from itertools import accumulate
 
 def py_chunker(file: str):
     print(file)
 
     chunks = []
-    imports_list_total = []
+    imports_list_total = {}
     global_list_total = []
     start_line = 0
     end_line = 0
@@ -123,10 +124,14 @@ def py_chunker(file: str):
 
     with open(file, "r") as f:
         content = f.read()
-    
-    content_metadata = [len(line) for line in content.splitlines(keepends=True)]
 
-    tree = ast.parse(content)
+    line_lengths = [len(line) for line in content.splitlines(keepends=True)]
+    cum_offsets = [0] + list(accumulate(line_lengths))
+
+    try:
+        tree = ast.parse(content)
+    except SyntaxError:
+        return []
 
     for node in tree.body:
         functiontype = ""
@@ -134,21 +139,19 @@ def py_chunker(file: str):
 
         if isinstance(node, ast.Import):
             for body in node.names:
-                if not body.name in imports_list_total:
-                    imports_list_total.append({body.name: f"import {body.name}"})
+                if body.name not in imports_list_total:
+                    imports_list_total[body.name] = f"import {body.name}"
 
         elif isinstance(node, ast.ImportFrom):
             for body in node.names:
                 if body.asname:
-                    statement = ({body.asname:
-                f"from {node.module} import {body.name} as {body.asname}"}
-            )
+                    key = body.asname
+                    statement = f"from {node.module} import {body.name} as {body.asname}"
                 else:
-                    statement = ({body.name: 
-                f"from {node.module} import {body.name}"}
-            )
-                if not statement in imports_list_total:
-                    imports_list_total.append(statement)
+                    key = body.name
+                    statement = f"from {node.module} import {body.name}"
+                if key not in imports_list_total:
+                    imports_list_total[key] = statement
 
         elif isinstance(node, ast.FunctionDef):
             if node.name:
@@ -169,35 +172,39 @@ def py_chunker(file: str):
         if obj_node:
             parts.append((obj_node, functiontype, start_line, end_line))
 
-    for obj_node, functiontype, start_line, end_line in parts:
-        imports_list = []
-        global_list = []
+    global_cache = []
+    for node, lineno, end_lineno in global_list_total:
+        segment = ast.get_source_segment(content, node)
+        var_name = ""
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    var_name = target.id
+                    break
+        global_cache.append((var_name, segment))
 
-        first_char = sum(content_metadata[:start_line - 1])
-        last_char = sum(content_metadata[:end_line])
-        # print(content[first_char:last_char])
-        # print(ast.get_source_segment(content, name))
+    for obj_node, functiontype, start_line, end_line in parts:
+        first_char = cum_offsets[start_line - 1]
+        last_char = cum_offsets[end_line]
+
         used_names = {
             node.id
             for node in ast.walk(obj_node)
             if isinstance(node, ast.Name)
         }
-        for item in imports_list_total:
-            for from_, import_ in item.items():
-                if from_ in used_names:
-                    imports_list.append(import_)
-        
-        for node, node.lineno, node.end_lineno in global_list_total:
-            segment = ast.get_source_segment(content, node)
-            var_name = ""
-            if isinstance(node, ast.Assign):
-                for target in node.targets:
-                    if isinstance(target, ast.Name):
-                        var_name = target.id
-                if var_name and var_name in used_names:
-                    global_list.append(segment)
 
-        # print(global_list)
+        imports_list = [
+            import_
+            for from_, import_ in imports_list_total.items()
+            if from_ in used_names
+        ]
+
+        global_list = [
+            segment
+            for var_name, segment in global_cache
+            if var_name and var_name in used_names
+        ]
+
         chunks.append(
             MinimalSource(
                 file_path=file,
