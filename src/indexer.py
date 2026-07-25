@@ -18,11 +18,18 @@ def load_all_files():
         # print(md_chunker(str(md_files[1]))[0])
         # print(md_chunker(str(md_files[1]))[1])
 
-        md_database = Path("./")
+        # md_database = Path("./")
 
-        md_files = list(md_database.rglob("READ.md"))
+        # md_files = list(md_database.rglob("READ.md"))
 
-        res = md_chunker(str(md_files[0]))
+        # res = md_chunker(str(md_files[0]))
+        # print(res)
+
+        py_database = Path(config.raw_dir)
+
+        py_files = list(py_database.rglob("*.py"))
+
+        res = py_chunker(str(py_files[0]))
         print(res)
 
         # for file in md_files:
