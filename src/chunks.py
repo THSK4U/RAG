@@ -150,12 +150,6 @@ def py_chunker(file: str):
                 if not statement in imports_list_total:
                     imports_list_total.append(statement)
 
-        elif isinstance(node, ast.Assign):
-            # for targ in node.targets:
-            #     print(targ.lineno)
-            pass
-
-
         elif isinstance(node, ast.FunctionDef):
             if node.name:
                 obj_node = node
@@ -163,31 +157,47 @@ def py_chunker(file: str):
                 start_line = node.lineno
                 end_line = node.end_lineno
 
-
         elif isinstance(node, ast.ClassDef):
             if node.name:
                 obj_node = node
                 functiontype = FunctionType.CLASS
                 start_line = node.lineno
                 end_line = node.end_lineno
+        else:
+            global_list_total.append((node, node.lineno, node.end_lineno))
 
         if obj_node:
             parts.append((obj_node, functiontype, start_line, end_line))
 
     for obj_node, functiontype, start_line, end_line in parts:
         imports_list = []
+        global_list = []
 
         first_char = sum(content_metadata[:start_line - 1])
         last_char = sum(content_metadata[:end_line])
         # print(content[first_char:last_char])
         # print(ast.get_source_segment(content, name))
-    
+        used_names = {
+            node.id
+            for node in ast.walk(obj_node)
+            if isinstance(node, ast.Name)
+        }
         for item in imports_list_total:
             for from_, import_ in item.items():
-                if from_+"." in content[first_char:last_char]:
+                if from_ in used_names:
                     imports_list.append(import_)
+        
+        for node, node.lineno, node.end_lineno in global_list_total:
+            segment = ast.get_source_segment(content, node)
+            var_name = ""
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        var_name = target.id
+                if var_name and var_name in used_names:
+                    global_list.append(segment)
 
-        # print(imports_list)
+        # print(global_list)
         chunks.append(
             MinimalSource(
                 file_path=file,
@@ -195,7 +205,7 @@ def py_chunker(file: str):
                     type = functiontype,
                     name = obj_node.name,
                     imports = imports_list,
-                    # globals = global_list,
+                    globals = global_list,
                 ),
                 first_character_index=first_char,
                 last_character_index=last_char,
