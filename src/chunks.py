@@ -1,7 +1,7 @@
 # للـ .md: يقطّع حسب العناوين ## و ###
 # للـ .py: يقطّع حسب functions و classes (AST)
 # يضمن أن كل chunk ≤ 2000 حرف
-from .models import config, MinimalSource, MarkdownMetadata, PythonMetadata, FunctionType
+from .models import config, FullSource, MarkdownMetadata, PythonMetadata, FunctionType
 from pathlib import Path
 import re
 
@@ -38,7 +38,7 @@ def md_chunker(file: str):
         if len(selected_text) <= config.max_chunk_size and len(selected_text.strip()) > 0:
 
             chunks.append(
-                MinimalSource(
+                FullSource(
                     file_path=file,
                     metadata=MarkdownMetadata(
                         title=title,
@@ -70,7 +70,7 @@ def md_chunker(file: str):
                     else:
                         end_chunk = new_end
                     chunks.append(
-                        MinimalSource(
+                        FullSource(
                             file_path=file,
                             metadata=MarkdownMetadata(
                                 title=title,
@@ -103,7 +103,7 @@ def md_chunker(file: str):
 
                 else:
                     chunks.append(
-                        MinimalSource(
+                        FullSource(
                             file_path=file,
                             metadata=MarkdownMetadata(
                                 title=title,
@@ -215,7 +215,7 @@ def py_chunker(file: str):
         ]
         if (last_char - first_char) <= config.max_chunk_size:
             chunks.append(
-                MinimalSource(
+                FullSource(
                     file_path=file,
                     metadata=PythonMetadata(
                         type = functiontype,
@@ -243,7 +243,7 @@ def py_chunker(file: str):
                     else:
                         end_chunk = new_end
                     chunks.append(
-                        MinimalSource(
+                        FullSource(
                             file_path=file,
                             metadata=PythonMetadata(
                                 type=functiontype,
@@ -258,7 +258,7 @@ def py_chunker(file: str):
                     new_start = end_chunk
                 else:
                     chunks.append(
-                        MinimalSource(
+                        FullSource(
                             file_path=file,
                             metadata=PythonMetadata(
                                 type=functiontype,

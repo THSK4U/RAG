@@ -18,11 +18,16 @@ class PythonMetadata(BaseModel):
     globals: list[str] = []
     calls: list[str] = []
 
-class MinimalSource(BaseModel):
+class FullSource(BaseModel):
     file_path: str
     first_character_index: int
     last_character_index: int
     metadata: MarkdownMetadata | PythonMetadata
+
+class MinimalSource(BaseModel):
+    file_path: str
+    first_character_index: int
+    last_character_index: int
 
 class UnansweredQuestion(BaseModel):
     question_id: str = Field(default_factory=lambda:str(uuid.uuid4()))
