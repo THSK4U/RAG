@@ -87,11 +87,20 @@ def md_chunker(file: str):
                     last_space = segment.rfind(" ")
 
                     if last_newline > 0:
-                        new_start += last_newline + 1
+                        proposed_start = new_start + last_newline + 1
+                        if (end_chunk - proposed_start) > 100:
+                            new_start = end_chunk - 100
+                        else:
+                            new_start = proposed_start
                     elif last_space > 0:
-                        new_start += last_space + 1
+                        proposed_start = new_start + last_space + 1
+                        if (end_chunk - proposed_start) > 100:
+                            new_start = end_chunk - 100
+                        else:
+                            new_start = proposed_start
                     else:
                         new_start = end_chunk
+
                 else:
                     chunks.append(
                         MinimalSource(
@@ -204,20 +213,63 @@ def py_chunker(file: str):
             for var_name, segment in global_cache
             if var_name and var_name in used_names
         ]
-
-        chunks.append(
-            MinimalSource(
-                file_path=file,
-                metadata=PythonMetadata(
-                    type = functiontype,
-                    name = obj_node.name,
-                    imports = imports_list,
-                    globals = global_list,
-                ),
-                first_character_index=first_char,
-                last_character_index=last_char,
-                # text=content[first_char:last_char],
+        if (last_char - first_char) <= config.max_chunk_size:
+            chunks.append(
+                MinimalSource(
+                    file_path=file,
+                    metadata=PythonMetadata(
+                        type = functiontype,
+                        name = obj_node.name,
+                        imports = imports_list,
+                        globals = global_list,
+                    ),
+                    first_character_index=first_char,
+                    last_character_index=last_char,
+                    # text=content[first_char:last_char],
+                )
             )
-        )
+        else:
+            new_start = first_char
+            while new_start < last_char:
+                new_end = new_start + config.max_chunk_size
+                if new_end < last_char:
+                    split_text = content[new_start:new_end]
+                    split_pos = max(
+                        split_text.rfind("\n"),
+                        split_text.rfind(" ")
+                    )
+                    if split_pos > 0:
+                        end_chunk = new_start + split_pos
+                    else:
+                        end_chunk = new_end
+                    chunks.append(
+                        MinimalSource(
+                            file_path=file,
+                            metadata=PythonMetadata(
+                                type=functiontype,
+                                name=obj_node.name,
+                                imports=imports_list,
+                                globals=global_list,
+                            ),
+                            first_character_index=new_start,
+                            last_character_index=end_chunk,
+                        )
+                    )
+                    new_start = end_chunk
+                else:
+                    chunks.append(
+                        MinimalSource(
+                            file_path=file,
+                            metadata=PythonMetadata(
+                                type=functiontype,
+                                name=obj_node.name,
+                                imports=imports_list,
+                                globals=global_list,
+                            ),
+                            first_character_index=new_start,
+                            last_character_index=last_char,
+                        )
+                    )
+                    new_start = last_char
 
     return chunks

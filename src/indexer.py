@@ -33,21 +33,28 @@ def load_all_files():
         py: list = []
 
         with ProcessPoolExecutor(max_workers=workers) as executor:
-            futures = {executor.submit(_chunk_md, f): f for f in md_files}
+            # futures = {executor.submit(_chunk_md, f): f for f in md_files}
+            futures = {executor.submit(_chunk_md, md_files[2])}
             for future in as_completed(futures):
                 result = future.result()
                 if result:
                     md.extend(result)
 
-        with ProcessPoolExecutor(max_workers=workers) as executor:
-            futures = {executor.submit(_chunk_py, f): f for f in py_files}
-            for future in as_completed(futures):
-                result = future.result()
-                if result:
-                    py.extend(result)
+        # with ProcessPoolExecutor(max_workers=workers) as executor:
+        #     # futures = {executor.submit(_chunk_py, f): f for f in py_files}
+        #     futures = {executor.submit(_chunk_py, py_files[0])}
+        #     for future in as_completed(futures):
+        #         result = future.result()
+        #         if result:
+        #             py.extend(result)
 
         print(f"MD chunks: {len(md)} | PY chunks: {len(py)}")
-        print(md, py)
+        # print(md, py)
+        with open("output.txt", "w") as f:
+            # f.write(str(md))
+            import json
+            json.dump([x.model_dump(mode="json") for x in md], f, indent=4)
+
         return md, py
 
     except FileNotFoundError:
