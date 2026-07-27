@@ -5,7 +5,7 @@ from .models import config, FullSource, MarkdownMetadata, PythonMetadata, Functi
 from pathlib import Path
 import re
 
-def md_chunker(file: str):
+def text_strategies(file: str):
     print(file)
     chunks = []
 
@@ -121,7 +121,7 @@ def md_chunker(file: str):
 import ast
 from itertools import accumulate
 
-def py_chunker(file: str):
+def code_strategies(file: str):
     print(file)
 
     chunks = []
