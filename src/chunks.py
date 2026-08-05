@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 
 def text_strategies(file: str):
-    print(file)
+    # print(file)
     chunks = []
 
     with open(file, "r") as f:
@@ -122,7 +122,7 @@ import ast
 from itertools import accumulate
 
 def code_strategies(file: str):
-    print(file)
+    # print(file)
 
     chunks = []
     imports_list_total = {}

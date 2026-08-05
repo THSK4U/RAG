@@ -1,0 +1,37 @@
+vLLM Installation Guide
+=======================
+
+Requirements:
+- Python 3.9 or higher
+- CUDA 11.8 or higher (for GPU support)
+- At least 16 GB of GPU VRAM for 7B models
+
+Step 1 – Install with pip
+--------------------------
+    pip install vllm
+
+Step 2 – Verify the installation
+---------------------------------
+    python -c "import vllm; print(vllm.__version__)"
+
+Step 3 – Run the server
+------------------------
+    python -m vllm.entrypoints.openai.api_server \
+        --model facebook/opt-125m \
+        --port 8000
+
+Step 4 – Send a request
+------------------------
+    curl http://localhost:8000/v1/completions \
+        -H "Content-Type: application/json" \
+        -d '{
+            "model": "facebook/opt-125m",
+            "prompt": "San Francisco is a",
+            "max_tokens": 20
+        }'
+
+Troubleshooting
+---------------
+- If you see "CUDA out of memory", reduce --max-model-len or use --gpu-memory-utilization 0.8
+- If the server is slow to start, the model weights are being downloaded for the first time
+- For multi-GPU setups, add --tensor-parallel-size N where N is your GPU count

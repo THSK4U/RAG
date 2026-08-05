@@ -2,11 +2,14 @@
 # 2. يستدعي chunker على كل ملف — بشكل متوازي (Parallel)
 # 3. يحفظ كل الـ chunks في data/processed/chunks.json
 # 4. يبني الـ BM25 index ويحفظه
+from .models import FullSource, FunctionType, PythonMetadata
 from .chunks import text_strategies, code_strategies
 from pathlib import Path
 from .models import config
 from concurrent.futures import ProcessPoolExecutor, as_completed
-import os
+from rank_bm25 import BM25Okapi
+import re
+import json
 
 def _chunk_text(file_str: str):
     return text_strategies(file_str)
@@ -14,7 +17,7 @@ def _chunk_text(file_str: str):
 def _chunk_code(file_str: str):
     return code_strategies(file_str)
 
-def load_all_files():
+def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
     try:
         codebase_database = Path(config.raw_dir)
 
@@ -51,12 +54,13 @@ def load_all_files():
                 if result:
                     py.extend(result)
 
-        print(f"MD chunks: {len(md)} | PY chunks: {len(py)}")
+        # print(f"MD chunks: {len(md)} | PY chunks: {len(py)}")
         # print(md, py)
         with open(config.processed_dir + "/chunks.json", "w") as f:
             # f.write(str(md))
-            import json
             json.dump([x.model_dump(mode="json") for x in (md + py)], f, indent=4)
+
+        build_index(md + py)
 
         return md, py
 
@@ -64,3 +68,85 @@ def load_all_files():
         raise FileNotFoundError("vllm-0.10.1 dataset files not found.\n")
     except Exception as e:
         raise Exception(f"Invalid dataset: {e}\n")
+
+# class FullSource(BaseModel):
+#     file_path: str
+#     first_character_index: int
+#     last_character_index: int
+#     metadata: MarkdownMetadata | PythonMetadata
+def build_from_text(chunk, content) -> str:
+    first_char = chunk.first_character_index
+    last_char = chunk.last_character_index
+    meta = chunk.metadata
+
+    parts = []
+    if meta.title:
+        parts.append(meta.title)
+    if meta.header and meta.title != meta.header:
+        parts.append(meta.header)
+
+    parts.append(content[first_char:last_char])
+
+    return "\n".join(parts)
+
+
+def build_from_code(chunk, content):
+    first_char = chunk.first_character_index
+    last_char = chunk.last_character_index
+    meta = chunk.metadata
+
+    parts = []
+    if meta.type:
+        if meta.type == FunctionType.CLASS:
+            parts.append(f"Class: {meta.name}")
+        else:
+            parts.append(f"function: {meta.name}")
+
+    if meta.imports:
+        parts.append(f"imports: {meta.imports}")
+    if meta.globals:
+        parts.append(f"globals: {meta.globals}")
+
+    parts.append(content[first_char:last_char])
+
+    return "\n".join(parts)
+
+def tokenize(text: str) -> list[str]:
+    text = re.sub(r'([a-z])([A-Z])', r'\1 \2', text)
+    text = text.replace('_', ' ')
+    text = re.sub(r'[^a-zA-Z0-9\s]', ' ', text)
+    tokens = text.lower().split()
+    stopwords = {'the', 'a', 'an', 'is', 'in', 'it', 'of', 'to', 'and', 'or'}
+    return [t for t in tokens if t not in stopwords and len(t) > 1]
+
+def build_index(chunks):
+    file_cash = {}
+    corpus: list[list[str]] = []
+
+    for chunk in chunks:
+        file_path = chunk.file_path
+        if file_path not in file_cash:
+            with open(file_path, "r") as f:
+                file_cash[file_path] = f.read()
+
+        content = file_cash[file_path]
+        metadata = chunk.metadata
+        if isinstance(metadata, PythonMetadata):
+            index_text = build_from_code(chunk, content)
+        else:
+            index_text = build_from_text(chunk, content)
+##
+        tokens = tokenize(index_text)
+        corpus.append(tokens)
+    
+    bm25 = BM25Okapi(corpus)
+    processed = Path("data/processed")
+    processed.mkdir(exist_ok=True)
+    with open(processed / "bm25_index.pkl", "wb") as f:
+        import pickle
+        pickle.dump(bm25, f)
+    with open(processed / "chunks.json", "w") as f:
+        json.dump([x.model_dump(mode="json") for x in chunks], f, indent=4)
+
+
+    print(f"Index built: {len(chunks)} chunks")

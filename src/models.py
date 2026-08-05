@@ -59,6 +59,7 @@ class StudentSearchResultsAndAnswer(BaseModel):
 class Config(BaseModel):
   max_chunk_size: int = 2000
   raw_dir: str = "data/raw/vllm-0.10.1"
+#   raw_dir: str = "data/test_data"
   processed_dir: str = "data/processed"
 
 config = Config()
