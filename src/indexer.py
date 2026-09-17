@@ -2,14 +2,17 @@
 # 2. يستدعي chunker على كل ملف — بشكل متوازي (Parallel)
 # 3. يحفظ كل الـ chunks في data/processed/chunks.json
 # 4. يبني الـ BM25 index ويحفظه
-from .models import FullSource, FunctionType, PythonMetadata
-from .chunks import text_strategies, code_strategies
-from pathlib import Path
-from .models import config
-from concurrent.futures import ProcessPoolExecutor, as_completed
-from rank_bm25 import BM25Okapi
-import re
 import json
+import pickle
+import re
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from pathlib import Path
+
+from rank_bm25 import BM25Okapi
+
+from .chunks import code_strategies, text_strategies
+from .models import FullSource, FunctionType, PythonMetadata, config
+
 
 def _chunk_text(file_str: str):
     return text_strategies(file_str)
@@ -138,12 +141,11 @@ def build_index(chunks):
 ##
         tokens = tokenize(index_text)
         corpus.append(tokens)
-    
+
     bm25 = BM25Okapi(corpus)
     processed = Path("data/processed")
     processed.mkdir(exist_ok=True)
     with open(processed / "bm25_index.pkl", "wb") as f:
-        import pickle
         pickle.dump(bm25, f)
     with open(processed / "chunks.json", "w") as f:
         json.dump([x.model_dump(mode="json") for x in chunks], f, indent=4)

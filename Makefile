@@ -8,7 +8,7 @@ all: run
 
 run:
 	@$(PYTHON) -m $(NAME)
-	
+
 install:
 	@pipx install uv
 	@uv sync

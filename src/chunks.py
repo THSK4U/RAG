@@ -1,9 +1,12 @@
 # للـ .md: يقطّع حسب العناوين ## و ###
 # للـ .py: يقطّع حسب functions و classes (AST)
 # يضمن أن كل chunk ≤ 2000 حرف
-from .models import config, FullSource, MarkdownMetadata, PythonMetadata, FunctionType
-from pathlib import Path
+import ast
 import re
+from itertools import accumulate
+
+from .models import FullSource, FunctionType, MarkdownMetadata, PythonMetadata, config
+
 
 def text_strategies(file: str):
     # print(file)
@@ -35,8 +38,10 @@ def text_strategies(file: str):
         if selected_text.strip() == f"# {title}":
             continue
 
-        if len(selected_text) <= config.max_chunk_size and len(selected_text.strip()) > 0:
-
+        if (
+            len(selected_text) <= config.max_chunk_size
+            and len(selected_text.strip()) > 0
+        ):
             chunks.append(
                 FullSource(
                     file_path=file,
@@ -118,8 +123,6 @@ def text_strategies(file: str):
 
     return chunks
 
-import ast
-from itertools import accumulate
 
 def code_strategies(file: str):
     # print(file)
@@ -155,7 +158,9 @@ def code_strategies(file: str):
             for body in node.names:
                 if body.asname:
                     key = body.asname
-                    statement = f"from {node.module} import {body.name} as {body.asname}"
+                    statement = (
+                        f"from {node.module} import {body.name} as {body.asname}"
+                    )
                 else:
                     key = body.name
                     statement = f"from {node.module} import {body.name}"
@@ -197,9 +202,7 @@ def code_strategies(file: str):
         last_char = cum_offsets[end_line]
 
         used_names = {
-            node.id
-            for node in ast.walk(obj_node)
-            if isinstance(node, ast.Name)
+            node.id for node in ast.walk(obj_node) if isinstance(node, ast.Name)
         }
 
         imports_list = [
@@ -218,10 +221,10 @@ def code_strategies(file: str):
                 FullSource(
                     file_path=file,
                     metadata=PythonMetadata(
-                        type = functiontype,
-                        name = obj_node.name,
-                        imports = imports_list,
-                        globals = global_list,
+                        type=functiontype,
+                        name=obj_node.name,
+                        imports=imports_list,
+                        globals=global_list,
                     ),
                     first_character_index=first_char,
                     last_character_index=last_char,
@@ -234,10 +237,7 @@ def code_strategies(file: str):
                 new_end = new_start + config.max_chunk_size
                 if new_end < last_char:
                     split_text = content[new_start:new_end]
-                    split_pos = max(
-                        split_text.rfind("\n"),
-                        split_text.rfind(" ")
-                    )
+                    split_pos = max(split_text.rfind("\n"), split_text.rfind(" "))
                     if split_pos > 0:
                         end_chunk = new_start + split_pos
                     else:
