@@ -9,6 +9,22 @@ all: run
 run:
 	@$(PYTHON) -m $(NAME)
 
+cache:
+	export UV_CACHE_DIR=/tmp/uv-cache
+	export UV_PROJECT_ENVIRONMENT="/home/tsellak/goinfre/uv"
+
+molicode:
+	./moulinette/moulinette-ubuntu evaluate_student_search_results \
+	data/output/search_results/UnansweredQuestions/dataset_code_public.json \
+	data/datasets/AnsweredQuestions/dataset_code_public.json \
+	--k 10
+
+molidocs:
+	./moulinette/moulinette-ubuntu evaluate_student_search_results \
+	data/output/search_results/UnansweredQuestions/dataset_docs_public.json \
+	data/datasets/AnsweredQuestions/dataset_docs_public.json \
+	--k 10
+
 install:
 	@pipx install uv
 	@uv sync

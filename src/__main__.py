@@ -1,7 +1,9 @@
 # from .models import config
+
+from .evaluator import evaluate
+from .generator import Generator
 from .indexer import load_all_files
 from .retrieval import Retriever
-from .generator import Generator
 
 if __name__ == "__main__":
     try:
@@ -12,12 +14,39 @@ if __name__ == "__main__":
     except (FileNotFoundError, EOFError):
         chunk_text, chunk_code = load_all_files()
 
-    Query = "what is TCP/IP?"
+    # # Normal
+    # Query = "what is TCP/IP?"
 
-    search = Retriever().search
-    search_out = search(Query)
-    generator = Generator()
-    context = generator.bulid_context(search_out)
-    result = generator.generate_answer(context, Query)
+    # search = Retriever().search
+    # search_out = search(Query)
+    # generator = Generator()
+    # context = generator.bulid_context(search_out)
+    # result = generator.generate_answer(context, Query)
 
-    print(result)
+    # print(result)
+
+    # Recall@k
+    # فملف test.py فجذر المشروع:
+
+    r = Retriever()
+    r.search_dataset(
+        dataset_path="data/datasets/UnansweredQuestions/dataset_docs_public.json",
+        k=10,
+        save_directory="data/output/search_results/UnansweredQuestions"
+    )
+
+    evaluate(
+    student_search_results_path="data/output/search_results/UnansweredQuestions/dataset_docs_public.json",
+    dataset_path="data/datasets/AnsweredQuestions/dataset_docs_public.json",
+    )
+
+    r.search_dataset(
+        dataset_path="data/datasets/UnansweredQuestions/dataset_code_public.json",
+        k=10,
+        save_directory="data/output/search_results/UnansweredQuestions"
+    )
+
+    evaluate(
+    student_search_results_path="data/output/search_results/UnansweredQuestions/dataset_code_public.json",
+    dataset_path="data/datasets/AnsweredQuestions/dataset_code_public.json",
+    )

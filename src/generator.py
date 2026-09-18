@@ -40,12 +40,12 @@ class Generator:
             messages,
             tokenize=False,
             add_generation_prompt=True,
-            enable_thinking=True,  # Switches between thinking and non-thinking modes. Default is True.
+            enable_thinking=False,  # Switches between thinking and non-thinking modes. Default is True.
         )
         model_inputs = self.tokenizer(text, return_tensors="pt").to(self.model.device)
 
         # conduct text completion
-        generated_ids = self.model.generate(**model_inputs, max_new_tokens=32768)
+        generated_ids = self.model.generate(**model_inputs, max_new_tokens=512)
         output_ids = generated_ids[0][len(model_inputs.input_ids[0]) :].tolist()
 
         # parsing thinking content

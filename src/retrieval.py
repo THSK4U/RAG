@@ -1,8 +1,15 @@
 import json
 import pickle
 
+from tqdm import tqdm
+
 from .indexer import tokenize
-from .models import MinimalSource
+from .models import (
+    MinimalSearchResults,
+    MinimalSource,
+    RagDataset,
+    StudentSearchResults,
+)
 
 
 class Retriever:
@@ -31,3 +38,34 @@ class Retriever:
             )
 
         return results
+
+    def search_dataset(self, dataset_path: str, k: int, save_directory: str) -> None:
+
+        with open(dataset_path) as f:
+            dataset = RagDataset.model_validate_json(f.read())
+
+        all_results = []
+        for q in tqdm(dataset.rag_questions, desc="Searching"):
+            sources = self.search(q.question, k=k)
+            all_results.append(
+                MinimalSearchResults(
+                    question_id=q.question_id,
+                    question=q.question,
+                    retrieved_sources=sources,
+                )
+            )
+
+        output = StudentSearchResults(
+            search_results=all_results,
+            k=k,
+        )
+
+        import os
+
+        os.makedirs(save_directory, exist_ok=True)
+        filename = os.path.basename(dataset_path)
+        output_path = os.path.join(save_directory, filename)
+        with open(output_path, "w") as f:
+            f.write(output.model_dump_json(indent=2))
+
+        print("DONE!....")
