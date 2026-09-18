@@ -1,4 +1,7 @@
+from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+from .models import MinimalAnswer, StudentSearchResults, StudentSearchResultsAndAnswer
 
 
 class Generator:
@@ -22,6 +25,42 @@ class Generator:
                 parts.append(f"[{chunk.file_path}]\n{text}")
         context = "\n\n".join(parts)
         return context
+
+    def answer_dataset(
+        self, student_search_results_path: str, save_directory: str
+    ) -> None:
+
+        with open(student_search_results_path) as f:
+            dataset = StudentSearchResults.model_validate_json(f.read())
+
+        answers = []
+
+        for s in tqdm(dataset.search_results, desc="Answering"):
+            context = self.bulid_context(s.retrieved_sources)
+            ans = self.generate_answer(context, s.question)
+
+            answers.append(
+                MinimalAnswer(
+                    question_id=s.question_id,
+                    question=s.question,
+                    retrieved_sources=s.retrieved_sources,
+                    answer=ans,
+                )
+            )
+
+        output = StudentSearchResultsAndAnswer(
+            search_results=answers,
+            k=dataset.k,
+        )
+        import os
+
+        os.makedirs(save_directory, exist_ok=True)
+        filename = os.path.basename(student_search_results_path)
+        output_path = os.path.join(save_directory, filename)
+        with open(output_path, "w") as f:
+            f.write(output.model_dump_json(indent=2))
+
+        print("DONE!")
 
     def generate_answer(self, context, prompt):
 

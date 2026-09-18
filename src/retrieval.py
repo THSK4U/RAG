@@ -68,4 +68,4 @@ class Retriever:
         with open(output_path, "w") as f:
             f.write(output.model_dump_json(indent=2))
 
-        print("DONE!....")
+        print("Search dataset DONE!")
