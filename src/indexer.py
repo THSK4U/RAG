@@ -9,7 +9,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 from rank_bm25 import BM25Okapi
-from tqdm import tqdm
+from tqdm_test import tqdm
 
 from .chunks import code_strategies, text_strategies
 from .models import FullSource, FunctionType, PythonMetadata, config

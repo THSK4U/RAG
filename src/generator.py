@@ -1,6 +1,6 @@
-from tqdm import tqdm
+from tqdm_test import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
-
+import torch
 from .models import MinimalAnswer, StudentSearchResults, StudentSearchResultsAndAnswer
 
 
@@ -36,7 +36,7 @@ class Generator:
         answers = []
 
         for s in tqdm(dataset.search_results, desc="Answering"):
-            context = self.bulid_context(s.retrieved_sources)
+            context = self.bulid_context(s.retrieved_sources[:5])
             ans = self.generate_answer(context, s.question)
 
             answers.append(
@@ -65,10 +65,11 @@ class Generator:
     def generate_answer(self, context, prompt):
 
         # prepare the model input
-        role = f"""You are a technical assistant for the vLLM codebase.
-    Answer using ONLY the sources below.
-    If the answer is not there, say: I don't know.
-    Sources:\n{context}
+        role = f"""You are a helpful assistant for vLLM.
+Extract the concise answer to the user question using ONLY the provided documentation snippets.
+Only if the snippets contain zero relevant information, reply with: I don't know.
+Documentation:
+{context}
     """
 
         messages = [
@@ -84,7 +85,11 @@ class Generator:
         model_inputs = self.tokenizer(text, return_tensors="pt").to(self.model.device)
 
         # conduct text completion
-        generated_ids = self.model.generate(**model_inputs, max_new_tokens=512)
+        with torch.inference_mode():
+            generated_ids = self.model.generate(
+                **model_inputs,
+                max_new_tokens=128,
+            )
         output_ids = generated_ids[0][len(model_inputs.input_ids[0]) :].tolist()
 
         # parsing thinking content

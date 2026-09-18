@@ -1,7 +1,7 @@
 import json
 import pickle
 
-from tqdm import tqdm
+from tqdm_test import tqdm
 
 from .indexer import tokenize
 from .models import (
