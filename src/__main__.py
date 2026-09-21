@@ -21,7 +21,7 @@ if __name__ == "__main__":
     generator = Generator()
     search_dataset = "/home/tsellak/RAG/data/datasets/UnansweredQuestions/dataset_code_public.json"
     save_res_path = "data/output/search_results/UnansweredQuestions"
-    search = Retriever().search_dataset(search_dataset, 10, save_res_path)
+    search = Retriever().search_dataset(search_dataset, 5, save_res_path)
 
     stn_search_res_path = "data/output/search_results/UnansweredQuestions/dataset_code_public.json"
     save_dir = "data/output/search_results_and_answer/UnansweredQuestions"
@@ -35,22 +35,22 @@ if __name__ == "__main__":
     # Recall@k
     r = Retriever()
 
-    # --- DOCS
-    r.search_dataset(
-        dataset_path="data/datasets/UnansweredQuestions/dataset_docs_public.json",
-        k=10,
-        save_directory="data/output/search_results/UnansweredQuestions"
-    )
+    # # --- DOCS
+    # r.search_dataset(
+    #     dataset_path="data/datasets/UnansweredQuestions/dataset_docs_public.json",
+    #     k=10,
+    #     save_directory="data/output/search_results/UnansweredQuestions"
+    # )
 
-    evaluate(
-    student_search_results_path="data/output/search_results/UnansweredQuestions/dataset_docs_public.json",
-    dataset_path="data/datasets/AnsweredQuestions/dataset_docs_public.json",
-    )
+    # evaluate(
+    # student_search_results_path="data/output/search_results/UnansweredQuestions/dataset_docs_public.json",
+    # dataset_path="data/datasets/AnsweredQuestions/dataset_docs_public.json",
+    # )
 
     # --- CODES
     r.search_dataset(
         dataset_path="data/datasets/UnansweredQuestions/dataset_code_public.json",
-        k=10,
+        k=5,
         save_directory="data/output/search_results/UnansweredQuestions"
     )
 
