@@ -1,7 +1,7 @@
 import json
 import pickle
 
-from tqdm_test import tqdm
+from tqdm import tqdm
 
 from .indexer import tokenize
 from .models import (
@@ -68,4 +68,4 @@ class Retriever:
         with open(output_path, "w") as f:
             f.write(output.model_dump_json(indent=2))
 
-        print("Search dataset DONE!")
+        print(f"Search dataset DONE! {output_path}")

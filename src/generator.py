@@ -1,4 +1,4 @@
-from tqdm_test import tqdm
+from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 from .models import MinimalAnswer, StudentSearchResults, StudentSearchResultsAndAnswer
@@ -65,16 +65,14 @@ class Generator:
     def generate_answer(self, context, prompt):
 
         # prepare the model input
-        role = f"""You are a helpful assistant for vLLM.
-Extract the concise answer to the user question using ONLY the provided documentation snippets.
-Only if the snippets contain zero relevant information, reply with: I don't know.
-Documentation:
-{context}
-    """
-
+        role = (
+            "You are a helpful coding assistant for the vLLM project. "
+            "Answer the user's question directly and concisely based on the provided code/documentation snippets."
+        )
+        user_ = f"Code and Documentation Context:\n{context}\n\nQuestion: {prompt}\n\nAnswer:"
         messages = [
             {"role": "system", "content": role},
-            {"role": "user", "content": prompt},
+            {"role": "user", "content": user_},
         ]
         text = self.tokenizer.apply_chat_template(
             messages,
@@ -92,17 +90,17 @@ Documentation:
             )
         output_ids = generated_ids[0][len(model_inputs.input_ids[0]) :].tolist()
 
-        # parsing thinking content
-        try:
-            # rindex finding 151668 (</think>)
-            index = len(output_ids) - output_ids[::-1].index(151668)
-        except ValueError:
-            index = 0
+        # # parsing thinking content
+        # try:
+        #     # rindex finding 151668 (</think>)
+        #     index = len(output_ids) - output_ids[::-1].index(151668)
+        # except ValueError:
+        #     index = 0
 
         # thinking_content = self.tokenizer.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
         content = self.tokenizer.decode(
-            output_ids[index:], skip_special_tokens=True
-        ).strip("\n")
+            output_ids, skip_special_tokens=True
+        ).strip()
 
         # print("thinking content:", thinking_content)
         # print("content:", content)
