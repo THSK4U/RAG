@@ -68,7 +68,7 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
         #     # f.write(str(md))
         #     json.dump([x.model_dump(mode="json") for x in (md + py)], f, indent=4)
 
-        build_index(md + py)
+        build_index_cache(md + py)
 
         return md, py
 
@@ -129,8 +129,7 @@ def tokenize(text: str) -> list[str]:
     stopwords = {"the", "a", "an", "is", "in", "it", "of", "to", "and", "or"}
     return [t for t in tokens if t not in stopwords and len(t) > 1]
 
-
-def build_index(chunks):
+def build_index_cache(chunks):
     file_cash = {}
     corpus: list[list[str]] = []
 
@@ -153,6 +152,7 @@ def build_index(chunks):
     bm25 = BM25Okapi(corpus)
     processed = Path("data/processed")
     processed.mkdir(exist_ok=True)
+
     with open(processed / "bm25_index.pkl", "wb") as f:
         pickle.dump(bm25, f)
     with open(processed / "chunks.json", "w") as f:

@@ -181,13 +181,13 @@ def code_strategies(file: str):
                 start_line = node.lineno
                 end_line = node.end_lineno
         else:
-            global_list_total.append((node, node.lineno, node.end_lineno))
+            global_list_total.append(node)
 
         if obj_node:
             parts.append((obj_node, functiontype, start_line, end_line))
 
     global_cache = []
-    for node, lineno, end_lineno in global_list_total:
+    for node in global_list_total:
         segment = ast.get_source_segment(content, node)
         var_name = ""
         if isinstance(node, ast.Assign):

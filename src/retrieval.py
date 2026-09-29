@@ -1,5 +1,6 @@
 import json
 import pickle
+from pathlib import Path
 
 from tqdm import tqdm
 
@@ -19,10 +20,20 @@ class Retriever:
 
         with open("data/processed/chunks.json") as f:
             self.chunks = json.load(f)
+        try:
+            with open("data/processed/query_cache.json") as f:
+                self.query_cache = json.load(f)
+        except:
+            processed = Path("data/processed")
+            processed.mkdir(exist_ok=True)
+
+            with open(processed / "query_cache.json", "w") as f:
+                ...
 
     def search(self, query: str, k: int = 5) -> list[MinimalSource]:
 
         query_tokens = tokenize(query)
+        
         scores = self.bm25.get_scores(query_tokens)
         top_k_indices = scores.argsort()[::-1][:k]
 

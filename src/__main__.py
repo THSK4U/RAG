@@ -21,7 +21,7 @@ if __name__ == "__main__":
     generator = Generator()
     search_dataset = "/home/tsellak/RAG/data/datasets/UnansweredQuestions/dataset_code_public.json"
     save_res_path = "data/output/search_results/UnansweredQuestions"
-    search = Retriever().search_dataset(search_dataset, 5, save_res_path)
+    Retriever().search_dataset(search_dataset, 5, save_res_path)
 
     stn_search_res_path = "data/output/search_results/UnansweredQuestions/dataset_code_public.json"
     save_dir = "data/output/search_results_and_answer/UnansweredQuestions"
