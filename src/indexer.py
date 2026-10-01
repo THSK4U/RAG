@@ -25,6 +25,12 @@ def _chunk_code(file_str: str):
 
 def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
     try:
+        with open("data/processed/file_hashes.json", "r") as f:
+            hashes_cache = json.load(f)
+
+    except (FileNotFoundError, json.JSONDecodeError):
+        hashes_cache = {}
+    try:
         codebase_database = Path(config.raw_dir)
 
         txt_files = [

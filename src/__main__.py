@@ -1,5 +1,8 @@
 # from .models import config
 
+import json
+from pathlib import Path
+
 from .evaluator import evaluate
 from .generator import Generator
 from .indexer import load_all_files
@@ -13,8 +16,16 @@ if __name__ == "__main__":
         with open("data/processed/chunks.json") as f:
             ...
     except (FileNotFoundError, EOFError):
+        processed = Path("data/processed")
+        processed.mkdir(parents=True, exist_ok=True)
         chunk_text, chunk_code = load_all_files()
 
+    try:
+        with open("data/processed/query_cache.json", "r") as f:
+            ...
+    except (FileNotFoundError, EOFError):
+        with open("data/processed/query_cache.json", "w") as f:
+            json.dump({}, f)
     ## Normal
     # Query = "what is TCP/IP?"
     # search = Retriever().search
