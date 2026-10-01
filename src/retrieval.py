@@ -6,6 +6,7 @@ from tqdm import tqdm
 
 from .indexer import tokenize
 from .models import (
+    FullSource,
     MinimalSearchResults,
     MinimalSource,
     RagDataset,
@@ -20,20 +21,24 @@ class Retriever:
 
         with open("data/processed/chunks.json") as f:
             self.chunks = json.load(f)
-        try:
-            with open("data/processed/query_cache.json") as f:
-                self.query_cache = json.load(f)
-        except:
-            processed = Path("data/processed")
-            processed.mkdir(exist_ok=True)
 
-            with open(processed / "query_cache.json", "w") as f:
-                ...
+        try:
+            with open("data/processed/query_cache.json", "r") as f:
+                self.query_cache = json.load(f)
+
+        except (FileNotFoundError, json.JSONDecodeError):
+            processed = Path("data/processed")
+            processed.mkdir(parents=True, exist_ok=True)
+
+            self.query_cache = {}
 
     def search(self, query: str, k: int = 5) -> list[MinimalSource]:
 
+        cache_key = f"{query.strip().lower()}_{k}"
+
+        if cache_key in self.query_cache:
+            return [FullSource(**item) for item in self.query_cache[cache_key]]
         query_tokens = tokenize(query)
-        
         scores = self.bm25.get_scores(query_tokens)
         top_k_indices = scores.argsort()[::-1][:k]
 
@@ -41,13 +46,19 @@ class Retriever:
         for idx in top_k_indices:
             chunk = self.chunks[idx]
             results.append(
-                MinimalSource(
+                FullSource(
                     file_path=chunk["file_path"],
                     first_character_index=chunk["first_character_index"],
                     last_character_index=chunk["last_character_index"],
+                    metadata=chunk["metadata"]
                 )
             )
 
+        self.query_cache[cache_key] = [r.model_dump() for r in results]
+        with open("data/processed/query_cache.json", "w") as f:
+            json.dump(self.query_cache, f, indent=2)
+
+        print(" Query cache Done! data/processed/query_cache.json")
         return results
 
     def search_dataset(self, dataset_path: str, k: int, save_directory: str) -> None:

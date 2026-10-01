@@ -53,7 +53,7 @@ class RagDataset(BaseModel):
 class MinimalSearchResults(BaseModel):
     question_id: str
     question: str
-    retrieved_sources: List[MinimalSource]
+    retrieved_sources: List[FullSource | MinimalSource]
 
 
 class MinimalAnswer(MinimalSearchResults):

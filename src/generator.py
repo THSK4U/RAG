@@ -1,7 +1,7 @@
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
-from .models import MinimalAnswer, StudentSearchResults, StudentSearchResultsAndAnswer
+from .models import MinimalAnswer, MinimalSource, StudentSearchResults, StudentSearchResultsAndAnswer
 
 
 class Generator:
@@ -22,7 +22,7 @@ class Generator:
             last_char = chunk.last_character_index
             with open(chunk.file_path) as f:
                 text = f.read()[first_char:last_char]
-                parts.append(f"[{chunk.file_path}]\n{text}")
+            parts.append(f"[{chunk.file_path}]\n{chunk.metadata}\n{text}")
         context = "\n\n".join(parts)
         return context
 
@@ -36,14 +36,17 @@ class Generator:
         answers = []
 
         for s in tqdm(dataset.search_results, desc="Answering"):
-            context = self.bulid_context(s.retrieved_sources[:5])
+            context = self.bulid_context(s.retrieved_sources[:dataset.k])
             ans = self.generate_answer(context, s.question)
-
+            retriver_convert = [
+                MinimalSource.model_validate(src,from_attributes=True)
+                for src in s.retrieved_sources
+                ]
             answers.append(
                 MinimalAnswer(
                     question_id=s.question_id,
                     question=s.question,
-                    retrieved_sources=s.retrieved_sources,
+                    retrieved_sources=retriver_convert,
                     answer=ans,
                 )
             )
@@ -52,8 +55,8 @@ class Generator:
             search_results=answers,
             k=dataset.k,
         )
-        import os
 
+        import os
         os.makedirs(save_directory, exist_ok=True)
         filename = os.path.basename(student_search_results_path)
         output_path = os.path.join(save_directory, filename)
@@ -66,10 +69,15 @@ class Generator:
 
         # prepare the model input
         role = (
-            "You are a helpful coding assistant for the vLLM project. "
-            "Answer the user's question directly and concisely based on the provided code/documentation snippets."
+            "Answer the question directly using ONLY the provided code and documentation.\n"
+            "Rules:\n"
+            "- Be concise, factual, and to the point (1 to 2 sentences).\n"
+            "- Extract exact values, flags, class names, or HTTP endpoints directly from the text.\n"
+            "- Do not include pleasantries, conversational filler, or assumptions."
         )
-        user_ = f"Code and Documentation Context:\n{context}\n\nQuestion: {prompt}\n\nAnswer:"
+
+        user_ = f"Context:\n{context}\nQuestion:\n{prompt}\n Direct Answer:"
+
         messages = [
             {"role": "system", "content": role},
             {"role": "user", "content": user_},
@@ -87,6 +95,8 @@ class Generator:
             generated_ids = self.model.generate(
                 **model_inputs,
                 max_new_tokens=128,
+                do_sample=False,
+                repetition_penalty=1.1,
             )
         output_ids = generated_ids[0][len(model_inputs.input_ids[0]) :].tolist()
 
@@ -98,9 +108,7 @@ class Generator:
         #     index = 0
 
         # thinking_content = self.tokenizer.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
-        content = self.tokenizer.decode(
-            output_ids, skip_special_tokens=True
-        ).strip()
+        content = self.tokenizer.decode(output_ids, skip_special_tokens=True).strip()
 
         # print("thinking content:", thinking_content)
         # print("content:", content)

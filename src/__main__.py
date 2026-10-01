@@ -6,6 +6,7 @@ from .indexer import load_all_files
 from .retrieval import Retriever
 
 if __name__ == "__main__":
+    ## chunks
     try:
         with open("data/processed/bm25_index.pkl", "rb") as f:
             ...
@@ -14,15 +15,17 @@ if __name__ == "__main__":
     except (FileNotFoundError, EOFError):
         chunk_text, chunk_code = load_all_files()
 
-    # Normal
+    ## Normal
     # Query = "what is TCP/IP?"
     # search = Retriever().search
     # search_out = search(Query)
+    ## Retriver
     generator = Generator()
-    search_dataset = "/home/tsellak/RAG/data/datasets/UnansweredQuestions/dataset_code_public.json"
+    search_dataset = "data/datasets/UnansweredQuestions/dataset_code_public.json"
     save_res_path = "data/output/search_results/UnansweredQuestions"
     Retriever().search_dataset(search_dataset, 5, save_res_path)
 
+    ## generator answeres
     stn_search_res_path = "data/output/search_results/UnansweredQuestions/dataset_code_public.json"
     save_dir = "data/output/search_results_and_answer/UnansweredQuestions"
     generator.answer_dataset(stn_search_res_path, save_dir)
@@ -32,7 +35,7 @@ if __name__ == "__main__":
 
     # print(result)
 
-    # Recall@k
+    ## Recall@k
     r = Retriever()
 
     # # --- DOCS
