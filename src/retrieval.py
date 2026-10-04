@@ -21,7 +21,6 @@ class Retriever:
         with open("data/processed/chunks.json") as f:
             self.chunks = json.load(f)
 
-
         with open("data/processed/query_cache.json", "r") as f:
             self.query_cache = json.load(f)
 

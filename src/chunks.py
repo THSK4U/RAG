@@ -1,7 +1,9 @@
 # للـ .md: يقطّع حسب العناوين ## و ###
 # للـ .py: يقطّع حسب functions و classes (AST)
 # يضمن أن كل chunk ≤ 2000 حرف
+# تأكد من hash الخاص بالملف
 import ast
+import json
 import re
 from itertools import accumulate
 
@@ -9,7 +11,6 @@ from .models import FullSource, FunctionType, MarkdownMetadata, PythonMetadata, 
 
 
 def text_strategies(file: str):
-    # print(file)
     chunks = []
 
     with open(file, "r") as f:

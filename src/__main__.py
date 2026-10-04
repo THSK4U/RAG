@@ -1,6 +1,7 @@
 # from .models import config
 
 import json
+import os
 from pathlib import Path
 
 from .evaluator import evaluate
@@ -11,13 +12,21 @@ from .retrieval import Retriever
 if __name__ == "__main__":
     ## chunks
     try:
-        with open("data/processed/bm25_index.pkl", "rb") as f:
-            ...
         with open("data/processed/chunks.json") as f:
-            ...
+            if f.read() :
+                ...
+            else:
+                raise FileNotFoundError
+        with open("data/processed/bm25_index.pkl", "rb") as f:
+            if f.read():
+                ...
+            else:
+                raise FileNotFoundError
     except (FileNotFoundError, EOFError):
         processed = Path("data/processed")
-        processed.mkdir(parents=True, exist_ok=True)
+        processed.mkdir(exist_ok=True)
+        with open(processed / "chunks.json", "w") as f:
+            json.dump({}, f)
         chunk_text, chunk_code = load_all_files()
 
     try:
@@ -29,6 +38,17 @@ if __name__ == "__main__":
     except (FileNotFoundError, EOFError):
         with open("data/processed/query_cache.json", "w") as f:
             json.dump({}, f)
+
+    try:
+            with open("data/processed/file_hashes.json", "r") as f:
+                if f.read():
+                    ...
+                else:
+                    raise FileNotFoundError
+    except (FileNotFoundError, EOFError):
+            with open("data/processed/file_hashes.json", "w") as f:
+                json.dump({}, f)
+
     ## Normal
     # Query = "what is TCP/IP?"
     # search = Retriever().search

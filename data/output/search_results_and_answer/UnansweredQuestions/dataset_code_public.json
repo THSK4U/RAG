@@ -8,9 +8,14 @@
           "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/fused_moe/batched_triton_or_deep_gemm_moe.py",
           "first_character_index": 2486,
           "last_character_index": 4484
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/design/fused_moe_modular_kernel.md",
+          "first_character_index": 10666,
+          "last_character_index": 11634
         }
       ],
-      "answer": "The activated formats returned by the fused batched MoE layer are `mk.FusedMoEActivationFormat`."
+      "answer": "The activated formats returned by the fused batched MoE layer are contiguous."
     },
     {
       "question_id": "02789461-05fd-435d-9673-91606102d6c9",
@@ -20,9 +25,14 @@
           "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/utils/fp8_utils.py",
           "first_character_index": 14258,
           "last_character_index": 15662
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/utils/fp8_utils.py",
+          "first_character_index": 8680,
+          "last_character_index": 10219
         }
       ],
-      "answer": "The default values for FP8_MIN and FP8_MAX constants in vLLM's triton_flash_attention module are not explicitly stated in the provided context. However, based on typical usage patterns, these values might be set to specific thresholds like -1e-15 or similar. For precise information, refer to the documentation or source code."
+      "answer": "The default values for FP8_MIN and FP8_MAX constants in vLLM's triton_flash_attention module are both set to 0.0."
     },
     {
       "question_id": "5ff8e342-b4e2-45e1-9ef0-990915c5bb1f",
@@ -32,9 +42,14 @@
           "file_path": "data/raw/vllm-0.10.1/docs/contributing/profiling.md",
           "first_character_index": 277,
           "last_character_index": 1924
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/features/multimodal_inputs.md",
+          "first_character_index": 19282,
+          "last_character_index": 20287
         }
       ],
-      "answer": "The default timeout value for VLLM_RPC_TIMEOUT is 1800000 seconds."
+      "answer": "The default timeout value for the VLLM_RPC_TIMEOUT environment variable is 1800000 seconds."
     },
     {
       "question_id": "cc784ab6-ef8a-402d-b874-4160ec7c87f1",
@@ -44,10 +59,15 @@
           "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/cuda_communicator.py",
           "first_character_index": 402,
           "last_character_index": 2391
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/custom_all_reduce.py",
+          "first_character_index": 1434,
+          "last_character_index": 3428
         }
       ],
-      "answer": "The use of custom allreduce is determined by the presence of the `tp` flag in the `unique_name`."
+      "answer": "The answer is: The `use_custom_allreduce` flag determines whether custom allreduce is enabled."
     }
   ],
-  "k": 5
+  "k": 2
 }
