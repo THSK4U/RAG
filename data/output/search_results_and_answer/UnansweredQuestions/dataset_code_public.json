@@ -5,69 +5,229 @@
       "question": "What activation formats does the fused batched MoE layer return in vLLM?",
       "retrieved_sources": [
         {
-          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/fused_moe/batched_triton_or_deep_gemm_moe.py",
-          "first_character_index": 2486,
-          "last_character_index": 4484
+          "file_path": "data/raw/vllm-0.10.1/RELEASE.md",
+          "first_character_index": 996,
+          "last_character_index": 1789
         },
         {
-          "file_path": "data/raw/vllm-0.10.1/docs/design/fused_moe_modular_kernel.md",
-          "first_character_index": 10666,
-          "last_character_index": 11634
+          "file_path": "data/raw/vllm-0.10.1/docs/features/tool_calling.md",
+          "first_character_index": 10535,
+          "last_character_index": 11638
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/features/quantization/int8.md",
+          "first_character_index": 4410,
+          "last_character_index": 4628
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/features/quantization/int8.md",
+          "first_character_index": 1062,
+          "last_character_index": 1451
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/features/lora.md",
+          "first_character_index": 9968,
+          "last_character_index": 11500
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/features/tool_calling.md",
+          "first_character_index": 18676,
+          "last_character_index": 18816
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/features/reasoning_outputs.md",
+          "first_character_index": 5223,
+          "last_character_index": 6485
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/features/quantization/quantized_kvcache.md",
+          "first_character_index": 22,
+          "last_character_index": 192
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/features/multimodal_inputs.md",
+          "first_character_index": 17133,
+          "last_character_index": 17286
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/features/multimodal_inputs.md",
+          "first_character_index": 17286,
+          "last_character_index": 19282
         }
       ],
-      "answer": "The activated formats returned by the fused batched MoE layer are contiguous."
+      "answer": "The fused batched MoE layer returns activation formats in vLLM."
     },
     {
       "question_id": "02789461-05fd-435d-9673-91606102d6c9",
       "question": "What are the default values for FP8_MIN and FP8_MAX constants in vLLM's triton_flash_attention module?",
       "retrieved_sources": [
         {
-          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/utils/fp8_utils.py",
-          "first_character_index": 14258,
-          "last_character_index": 15662
+          "file_path": "data/raw/vllm-0.10.1/docs/features/multimodal_inputs.md",
+          "first_character_index": 11042,
+          "last_character_index": 11913
         },
         {
-          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/utils/fp8_utils.py",
-          "first_character_index": 8680,
-          "last_character_index": 10219
+          "file_path": "data/raw/vllm-0.10.1/docs/design/metrics.md",
+          "first_character_index": 24137,
+          "last_character_index": 25683
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/usage/faq.md",
+          "first_character_index": 2045,
+          "last_character_index": 2386
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/RELEASE.md",
+          "first_character_index": 996,
+          "last_character_index": 1789
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/features/sleep_mode.md",
+          "first_character_index": 2823,
+          "last_character_index": 2879
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/features/lora.md",
+          "first_character_index": 1896,
+          "last_character_index": 2072
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/usage/v1_guide.md",
+          "first_character_index": 0,
+          "last_character_index": 521
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/getting_started/installation/aws_neuron.md",
+          "first_character_index": 804,
+          "last_character_index": 2222
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/CMakeLists.txt",
+          "first_character_index": 17661,
+          "last_character_index": 19659
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/features/tool_calling.md",
+          "first_character_index": 18676,
+          "last_character_index": 18816
         }
       ],
-      "answer": "The default values for FP8_MIN and FP8_MAX constants in vLLM's triton_flash_attention module are both set to 0.0."
+      "answer": "The default values for FP8_MIN and FP8_MAX constants in vLLM's triton_flash_attention module are not explicitly stated in the provided information."
     },
     {
       "question_id": "5ff8e342-b4e2-45e1-9ef0-990915c5bb1f",
       "question": "What is the default timeout value for VLLM_RPC_TIMEOUT environment variable?",
       "retrieved_sources": [
         {
-          "file_path": "data/raw/vllm-0.10.1/docs/contributing/profiling.md",
-          "first_character_index": 277,
-          "last_character_index": 1924
+          "file_path": "data/raw/vllm-0.10.1/docs/getting_started/installation/intel_gaudi.md",
+          "first_character_index": 2980,
+          "last_character_index": 3057
         },
         {
-          "file_path": "data/raw/vllm-0.10.1/docs/features/multimodal_inputs.md",
-          "first_character_index": 19282,
-          "last_character_index": 20287
+          "file_path": "data/raw/vllm-0.10.1/docs/usage/metrics.md",
+          "first_character_index": 0,
+          "last_character_index": 1841
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/benchmarks/sonnet.txt",
+          "first_character_index": 7900,
+          "last_character_index": 9899
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/getting_started/installation/cpu.md",
+          "first_character_index": 953,
+          "last_character_index": 977
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/getting_started/installation/cpu/s390x.inc.md",
+          "first_character_index": 2676,
+          "last_character_index": 3020
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/design/metrics.md",
+          "first_character_index": 20042,
+          "last_character_index": 20167
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/CMakeLists.txt",
+          "first_character_index": 29573,
+          "last_character_index": 31572
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/requirements/cpu-build.txt",
+          "first_character_index": 91,
+          "last_character_index": 323
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/design/p2p_nccl_connector.md",
+          "first_character_index": 4026,
+          "last_character_index": 5447
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/CMakeLists.txt",
+          "first_character_index": 13702,
+          "last_character_index": 15695
         }
       ],
-      "answer": "The default timeout value for the VLLM_RPC_TIMEOUT environment variable is 1800000 seconds."
+      "answer": "The default timeout value for VLLM_RPC_TIMEOUT environment variable is not explicitly mentioned in the provided context. However, based on the information available, it is implied that the timeout is set to a reasonable default value for efficient communication between the server and client."
     },
     {
       "question_id": "cc784ab6-ef8a-402d-b874-4160ec7c87f1",
       "question": "What determines whether custom allreduce is enabled in vLLM's CudaCommunicator?",
       "retrieved_sources": [
         {
-          "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/cuda_communicator.py",
-          "first_character_index": 402,
-          "last_character_index": 2391
+          "file_path": "data/raw/vllm-0.10.1/docs/configuration/optimization.md",
+          "first_character_index": 6895,
+          "last_character_index": 6916
         },
         {
-          "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/custom_all_reduce.py",
-          "first_character_index": 1434,
-          "last_character_index": 3428
+          "file_path": "data/raw/vllm-0.10.1/docs/configuration/optimization.md",
+          "first_character_index": 7386,
+          "last_character_index": 7784
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/features/sleep_mode.md",
+          "first_character_index": 937,
+          "last_character_index": 1651
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/examples/online_serving/prometheus_grafana/README.md",
+          "first_character_index": 1357,
+          "last_character_index": 1509
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/configuration/optimization.md",
+          "first_character_index": 6297,
+          "last_character_index": 6895
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/examples/online_serving/prometheus_grafana/README.md",
+          "first_character_index": 1509,
+          "last_character_index": 2046
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/design/metrics.md",
+          "first_character_index": 4380,
+          "last_character_index": 5230
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/configuration/optimization.md",
+          "first_character_index": 7808,
+          "last_character_index": 8305
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/configuration/optimization.md",
+          "first_character_index": 5042,
+          "last_character_index": 5556
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/configuration/optimization.md",
+          "first_character_index": 7277,
+          "last_character_index": 7386
         }
       ],
-      "answer": "The answer is: The `use_custom_allreduce` flag determines whether custom allreduce is enabled."
+      "answer": "The answer is: The number of API processes and engine core processes determines whether custom allreduce is enabled."
     }
   ],
-  "k": 2
+  "k": 10
 }

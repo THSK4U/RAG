@@ -5,9 +5,18 @@
       "question": "What activation formats does the fused batched MoE layer return in vLLM?",
       "retrieved_sources": [
         {
+          "file_path": "data/raw/vllm-0.10.1/docs/design/fused_moe_modular_kernel.md",
+          "first_character_index": 16917,
+          "last_character_index": 18260,
+          "metadata": {
+            "title": "Fused MoE Modular Kernel",
+            "header": "FusedMoEPermuteExpertsUnpermute"
+          }
+        },
+        {
           "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/fused_moe/batched_triton_or_deep_gemm_moe.py",
-          "first_character_index": 2486,
-          "last_character_index": 4484,
+          "first_character_index": 6483,
+          "last_character_index": 6737,
           "metadata": {
             "type": "class",
             "name": "BatchedTritonOrDeepGemmExperts",
@@ -23,12 +32,185 @@
           }
         },
         {
-          "file_path": "data/raw/vllm-0.10.1/docs/design/fused_moe_modular_kernel.md",
-          "first_character_index": 10666,
-          "last_character_index": 11634,
+          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/quark/quark_moe.py",
+          "first_character_index": 17764,
+          "last_character_index": 18096,
           "metadata": {
-            "title": "Fused MoE Modular Kernel",
-            "header": "How To Add a FusedMoEPermuteExpertsUnpermute Type"
+            "type": "class",
+            "name": "QuarkW4A4MXFp4MoEMethod",
+            "imports": [
+              "from typing import Any",
+              "from typing import Callable",
+              "from typing import Optional",
+              "import torch",
+              "from vllm.model_executor.layers.fused_moe import FusedMoE",
+              "from vllm.model_executor.layers.fused_moe import FusedMoEConfig",
+              "from vllm.model_executor.layers.fused_moe import FusedMoeWeightScaleSupported",
+              "from vllm.model_executor.layers.quantization.utils.mxfp4_utils import OCP_MX_BLOCK_SIZE",
+              "from vllm.model_executor.utils import set_weight_attrs",
+              "from vllm.platforms import current_platform"
+            ],
+            "globals": [
+              "logger = init_logger(__name__)"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/compressed_tensors/compressed_tensors_moe.py",
+          "first_character_index": 65820,
+          "last_character_index": 67057,
+          "metadata": {
+            "type": "class",
+            "name": "CompressedTensorsWNA16MoEMethod",
+            "imports": [
+              "from typing import Callable",
+              "from typing import Optional",
+              "import torch",
+              "from compressed_tensors import CompressionFormat",
+              "from vllm.model_executor.layers.fused_moe import FusedMoE",
+              "from vllm.model_executor.layers.fused_moe import FusedMoEConfig",
+              "from vllm.model_executor.layers.quantization.compressed_tensors.schemes.compressed_tensors_wNa16 import WNA16_SUPPORTED_BITS",
+              "from vllm.model_executor.utils import set_weight_attrs"
+            ],
+            "globals": [],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/modelopt.py",
+          "first_character_index": 61198,
+          "last_character_index": 63065,
+          "metadata": {
+            "type": "class",
+            "name": "ModelOptNvFp4FusedMoE",
+            "imports": [
+              "from typing import Callable",
+              "from typing import Optional",
+              "import torch",
+              "from torch.nn.parameter import Parameter",
+              "from vllm.model_executor.layers.fused_moe.config import FusedMoEConfig",
+              "from vllm.model_executor.layers.fused_moe.flashinfer_cutlass_moe import is_valid_flashinfer_cutlass_fused_moe",
+              "from vllm.model_executor.layers.fused_moe.layer import FusedMoE",
+              "from vllm.model_executor.layers.fused_moe.layer import FusedMoEMethodBase",
+              "from vllm.model_executor.layers.fused_moe.layer import FusedMoeWeightScaleSupported",
+              "from vllm.model_executor.layers.quantization.utils.flashinfer_fp4_moe import build_flashinfer_fp4_cutlass_moe_prepare_finalize",
+              "from vllm.model_executor.layers.quantization.utils.flashinfer_fp4_moe import reorder_w1w3_to_w3w1",
+              "from vllm.model_executor.layers.quantization.utils.flashinfer_fp4_moe import select_nvfp4_gemm_impl",
+              "from vllm.model_executor.layers.quantization.utils.marlin_utils_fp4 import prepare_moe_fp4_layer_for_marlin",
+              "from vllm.model_executor.layers.quantization.utils.quant_utils import swizzle_blockscale",
+              "from vllm.model_executor.parameter import ModelWeightParameter",
+              "from vllm.model_executor.parameter import PerTensorScaleParameter",
+              "from vllm.scalar_type import scalar_types"
+            ],
+            "globals": [
+              "logger = init_logger(__name__)"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/fused_moe/fused_batched_moe.py",
+          "first_character_index": 32771,
+          "last_character_index": 34705,
+          "metadata": {
+            "type": "class",
+            "name": "BatchedTritonExperts",
+            "imports": [
+              "from typing import Optional",
+              "import torch",
+              "from vllm.model_executor.layers.fused_moe.config import FusedMoEQuantConfig",
+              "from vllm.model_executor.layers.fused_moe.fused_moe import get_config_dtype_str",
+              "from vllm.model_executor.layers.fused_moe.fused_moe import try_get_optimal_moe_config",
+              "from vllm.model_executor.layers.fused_moe.topk_weight_and_reduce import TopKWeightAndReduceDelegate",
+              "from vllm.model_executor.layers.fused_moe.utils import _resize_cache",
+              "from vllm.model_executor.layers.fused_moe.utils import normalize_batched_scales_shape",
+              "from vllm.triton_utils import tl"
+            ],
+            "globals": [],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/fused_moe/deep_gemm_moe.py",
+          "first_character_index": 12806,
+          "last_character_index": 13639,
+          "metadata": {
+            "type": "def",
+            "name": "deep_gemm_moe_fp8",
+            "imports": [
+              "from typing import Optional",
+              "import torch",
+              "from vllm.model_executor.layers.fused_moe.prepare_finalize import MoEPrepareAndFinalizeNoEP"
+            ],
+            "globals": [],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/inc.py",
+          "first_character_index": 1384,
+          "last_character_index": 2300,
+          "metadata": {
+            "type": "class",
+            "name": "INCConfig",
+            "imports": [
+              "from typing import Any",
+              "from typing import Optional",
+              "import torch",
+              "from vllm.model_executor.layers.fused_moe.layer import FusedMoE",
+              "from vllm.model_executor.layers.fused_moe.layer import UnquantizedFusedMoEMethod",
+              "from vllm.model_executor.layers.linear import LinearBase",
+              "from vllm.model_executor.layers.linear import UnquantizedLinearMethod",
+              "from vllm.model_executor.layers.quantization import QuantizationMethods",
+              "from vllm.model_executor.layers.quantization.base_config import QuantizationConfig"
+            ],
+            "globals": [],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/bitsandbytes.py",
+          "first_character_index": 21846,
+          "last_character_index": 23085,
+          "metadata": {
+            "type": "class",
+            "name": "BitsAndBytesMoEMethod",
+            "imports": [
+              "from typing import Callable",
+              "from typing import Optional",
+              "import torch",
+              "from packaging import version",
+              "from vllm.model_executor.layers.fused_moe.layer import FusedMoE",
+              "from vllm.model_executor.layers.fused_moe.layer import FusedMoEConfig",
+              "from vllm.model_executor.layers.fused_moe.layer import FusedMoEMethodBase",
+              "from vllm.model_executor.layers.linear import set_weight_attrs"
+            ],
+            "globals": [],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/moe_wna16.py",
+          "first_character_index": 19532,
+          "last_character_index": 20397,
+          "metadata": {
+            "type": "class",
+            "name": "MoeWNA16Method",
+            "imports": [
+              "from typing import Callable",
+              "from typing import Optional",
+              "import torch",
+              "from vllm.distributed import get_tensor_model_parallel_rank",
+              "from vllm.distributed import get_tp_group",
+              "from vllm.model_executor.layers.fused_moe.layer import FusedMoE",
+              "from vllm.model_executor.layers.fused_moe.layer import FusedMoEConfig",
+              "from vllm.model_executor.layers.fused_moe.layer import FusedMoEMethodBase",
+              "from vllm.model_executor.layers.fused_moe.layer import FusedMoeWeightScaleSupported",
+              "from vllm.model_executor.utils import set_weight_attrs"
+            ],
+            "globals": [],
+            "calls": []
           }
         }
       ]
@@ -38,33 +220,185 @@
       "question": "What are the default values for FP8_MIN and FP8_MAX constants in vLLM's triton_flash_attention module?",
       "retrieved_sources": [
         {
-          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/utils/fp8_utils.py",
-          "first_character_index": 14258,
-          "last_character_index": 15662,
+          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/input_quant_fp8.py",
+          "first_character_index": 2847,
+          "last_character_index": 4067,
           "metadata": {
-            "type": "def",
-            "name": "per_token_group_quant_fp8",
+            "type": "class",
+            "name": "QuantFP8",
             "imports": [
               "from typing import Optional",
               "import torch",
+              "from vllm import _custom_ops as ops",
+              "from vllm.model_executor.custom_op import CustomOp",
+              "from vllm.model_executor.layers.quantization.utils.quant_utils import GroupShape"
+            ],
+            "globals": [
+              "_FP8_DTYPE = current_platform.fp8_dtype()",
+              "_FP8_MAX = 224.0 if current_platform.is_fp8_fnuz() else _FP8_FINFO.max",
+              "_FP8_MIN = -224.0 if current_platform.is_fp8_fnuz() else _FP8_FINFO.min",
+              "_FP8_MIN_SCALING_FACTOR = 1.0 / (_FP8_MAX * 512.0)"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/benchmarks/kernels/bench_per_token_quant_fp8.py",
+          "first_character_index": 2556,
+          "last_character_index": 3095,
+          "metadata": {
+            "type": "def",
+            "name": "benchmark_quantization",
+            "imports": [
+              "import torch",
+              "from vllm.triton_utils import triton"
+            ],
+            "globals": [
+              "configs = list(itertools.product(batch_size_range, seq_len_range))"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/attention/ops/triton_flash_attention.py",
+          "first_character_index": 31409,
+          "last_character_index": 32341,
+          "metadata": {
+            "type": "class",
+            "name": "_attention",
+            "imports": [
+              "import torch",
               "from vllm.platforms import current_platform",
-              "from vllm.triton_utils import triton",
-              "from vllm.utils.deep_gemm import is_blackwell_deep_gemm_e8m0_used"
+              "from vllm.triton_utils import triton"
+            ],
+            "globals": [
+              "float8_info = torch.finfo(current_platform.fp8_dtype())"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/design/fused_moe_modular_kernel.md",
+          "first_character_index": 16917,
+          "last_character_index": 18260,
+          "metadata": {
+            "title": "Fused MoE Modular Kernel",
+            "header": "FusedMoEPermuteExpertsUnpermute"
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/warmup/deep_gemm_warmup.py",
+          "first_character_index": 8026,
+          "last_character_index": 8198,
+          "metadata": {
+            "type": "def",
+            "name": "deep_gemm_warmup",
+            "imports": [
+              "import torch"
             ],
             "globals": [],
             "calls": []
           }
         },
         {
-          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/utils/fp8_utils.py",
-          "first_character_index": 8680,
-          "last_character_index": 10219,
+          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/kv_cache.py",
+          "first_character_index": 4324,
+          "last_character_index": 6226,
           "metadata": {
-            "type": "def",
-            "name": "_per_token_group_quant_fp8",
+            "type": "class",
+            "name": "BaseKVCacheMethod",
             "imports": [
-              "from vllm.triton_utils import tl",
-              "from vllm.triton_utils import triton"
+              "import torch",
+              "from vllm.model_executor.layers.quantization.base_config import QuantizationConfig",
+              "from vllm.model_executor.layers.quantization.base_config import QuantizeMethodBase",
+              "from vllm.platforms import current_platform"
+            ],
+            "globals": [
+              "logger = init_logger(__name__)"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/attention/backends/differential_flash_attn.py",
+          "first_character_index": 41070,
+          "last_character_index": 41484,
+          "metadata": {
+            "type": "class",
+            "name": "DifferentialFlashAttentionImpl",
+            "imports": [
+              "from typing import Any",
+              "from typing import Dict",
+              "from typing import List",
+              "from typing import Optional",
+              "import torch",
+              "from einops import rearrange",
+              "from vllm.attention.backends.abstract import AttentionImpl",
+              "from vllm.attention.backends.abstract import AttentionLayer",
+              "from vllm.attention.backends.abstract import AttentionType",
+              "from vllm.attention.backends.abstract import is_quantized_kv_cache",
+              "from vllm.attention.backends.flash_attn import FlashAttentionBackend",
+              "from vllm.attention.utils.fa_utils import flash_attn_supports_fp8",
+              "from vllm.attention.utils.fa_utils import get_flash_attn_version",
+              "from vllm.vllm_flash_attn import flash_attn_varlen_func",
+              "from vllm.vllm_flash_attn import flash_attn_with_kvcache"
+            ],
+            "globals": [
+              "logger = init_logger(__name__)"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/v1/attention/backends/mla/triton_mla.py",
+          "first_character_index": 5031,
+          "last_character_index": 6364,
+          "metadata": {
+            "type": "class",
+            "name": "TritonMLAImpl",
+            "imports": [
+              "from typing import Optional",
+              "import torch",
+              "from vllm import envs",
+              "from vllm.attention.backends.abstract import AttentionType",
+              "from vllm.attention.backends.abstract import is_quantized_kv_cache",
+              "from vllm.attention.ops.triton_decode_attention import decode_attention_fwd",
+              "from vllm.attention.ops.triton_flash_attention import triton_attention",
+              "from vllm.platforms import current_platform",
+              "from vllm.triton_utils import HAS_TRITON",
+              "from vllm.v1.attention.backends.mla.common import MLACommonImpl",
+              "from vllm.v1.attention.backends.mla.common import MLACommonMetadata"
+            ],
+            "globals": [],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/README.md",
+          "first_character_index": 2019,
+          "last_character_index": 3251,
+          "metadata": {
+            "title": "Welcome to vLLM",
+            "header": "Welcome to vLLM"
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/fused_moe/fused_batched_moe.py",
+          "first_character_index": 32771,
+          "last_character_index": 34705,
+          "metadata": {
+            "type": "class",
+            "name": "BatchedTritonExperts",
+            "imports": [
+              "from typing import Optional",
+              "import torch",
+              "from vllm.model_executor.layers.fused_moe.config import FusedMoEQuantConfig",
+              "from vllm.model_executor.layers.fused_moe.fused_moe import get_config_dtype_str",
+              "from vllm.model_executor.layers.fused_moe.fused_moe import try_get_optimal_moe_config",
+              "from vllm.model_executor.layers.fused_moe.topk_weight_and_reduce import TopKWeightAndReduceDelegate",
+              "from vllm.model_executor.layers.fused_moe.utils import _resize_cache",
+              "from vllm.model_executor.layers.fused_moe.utils import normalize_batched_scales_shape",
+              "from vllm.triton_utils import tl"
             ],
             "globals": [],
             "calls": []
@@ -77,21 +411,227 @@
       "question": "What is the default timeout value for VLLM_RPC_TIMEOUT environment variable?",
       "retrieved_sources": [
         {
-          "file_path": "data/raw/vllm-0.10.1/docs/contributing/profiling.md",
-          "first_character_index": 277,
-          "last_character_index": 1924,
+          "file_path": "data/raw/vllm-0.10.1/vllm/engine/async_llm_engine.py",
+          "first_character_index": 44558,
+          "last_character_index": 45296,
           "metadata": {
-            "title": "Profiling vLLM",
-            "header": "Profile with PyTorch Profiler"
+            "type": "class",
+            "name": "AsyncLLMEngine",
+            "imports": [
+              "import asyncio",
+              "import time",
+              "import weakref",
+              "from functools import partial",
+              "from typing import Any",
+              "from typing import AsyncGenerator",
+              "from typing import Dict",
+              "from typing import Iterable",
+              "from typing import List",
+              "from typing import Mapping",
+              "from typing import Optional",
+              "from typing import Type",
+              "from typing import Union",
+              "from weakref import ReferenceType",
+              "from vllm.config import DecodingConfig",
+              "from vllm.config import LoRAConfig",
+              "from vllm.config import ModelConfig",
+              "from vllm.config import ParallelConfig",
+              "from vllm.config import SchedulerConfig",
+              "from vllm.config import VllmConfig",
+              "from vllm.core.scheduler import SchedulerOutputs",
+              "from vllm.engine.arg_utils import AsyncEngineArgs",
+              "from vllm.engine.async_timeout import asyncio_timeout",
+              "from vllm.engine.llm_engine import LLMEngine",
+              "from vllm.engine.metrics_types import StatLoggerBase",
+              "from vllm.engine.protocol import EngineClient",
+              "from vllm.executor.executor_base import ExecutorBase",
+              "from vllm.inputs import PromptType",
+              "from vllm.inputs.preprocess import InputPreprocessor",
+              "from vllm.lora.request import LoRARequest",
+              "from vllm.model_executor.layers.sampler import SamplerOutput",
+              "from vllm.outputs import PoolingRequestOutput",
+              "from vllm.outputs import RequestOutput",
+              "from vllm.pooling_params import PoolingParams",
+              "from vllm.sampling_params import SamplingParams",
+              "from vllm.transformers_utils.tokenizer import AnyTokenizer",
+              "from vllm.usage.usage_lib import UsageContext",
+              "from vllm.utils import Device",
+              "from vllm.utils import deprecate_kwargs",
+              "from vllm.utils import weak_bind"
+            ],
+            "globals": [
+              "logger = init_logger(__name__)",
+              "ENGINE_ITERATION_TIMEOUT_S = envs.VLLM_ENGINE_ITERATION_TIMEOUT_S"
+            ],
+            "calls": []
           }
         },
         {
-          "file_path": "data/raw/vllm-0.10.1/docs/features/multimodal_inputs.md",
-          "first_character_index": 19282,
-          "last_character_index": 20287,
+          "file_path": "data/raw/vllm-0.10.1/vllm/connections.py",
+          "first_character_index": 4326,
+          "last_character_index": 4950,
           "metadata": {
-            "title": "Example: Custom gray background",
-            "header": "Audio Inputs"
+            "type": "class",
+            "name": "HTTPConnection",
+            "imports": [
+              "from collections.abc import Mapping",
+              "from collections.abc import MutableMapping",
+              "from pathlib import Path",
+              "from typing import Optional",
+              "from urllib.parse import urlparse",
+              "import aiohttp",
+              "import requests",
+              "from vllm.version import __version__ as VLLM_VERSION"
+            ],
+            "globals": [],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/getting_started/installation/aws_neuron.md",
+          "first_character_index": 7570,
+          "last_character_index": 8392,
+          "metadata": {
+            "title": "AWS Neuron",
+            "header": "Environment variables"
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/v1/engine/llm_engine.py",
+          "first_character_index": 11554,
+          "last_character_index": 12967,
+          "metadata": {
+            "type": "class",
+            "name": "LLMEngine",
+            "imports": [
+              "from collections.abc import Mapping",
+              "from copy import copy",
+              "from typing import Any",
+              "from typing import Callable",
+              "from typing import Optional",
+              "from typing import Union",
+              "from vllm.config import ParallelConfig",
+              "from vllm.config import VllmConfig",
+              "from vllm.distributed import stateless_destroy_torch_distributed_process_group",
+              "from vllm.engine.arg_utils import EngineArgs",
+              "from vllm.inputs import PromptType",
+              "from vllm.lora.request import LoRARequest",
+              "from vllm.multimodal import MULTIMODAL_REGISTRY",
+              "from vllm.multimodal import MultiModalRegistry",
+              "from vllm.outputs import PoolingRequestOutput",
+              "from vllm.outputs import RequestOutput",
+              "from vllm.pooling_params import PoolingParams",
+              "from vllm.sampling_params import SamplingParams",
+              "from vllm.tasks import SupportedTask",
+              "from vllm.transformers_utils.tokenizer_group import TokenizerGroup",
+              "from vllm.transformers_utils.tokenizer_group import init_tokenizer_from_configs",
+              "from vllm.usage.usage_lib import UsageContext",
+              "from vllm.utils import Device",
+              "from vllm.v1.engine.core_client import EngineCoreClient",
+              "from vllm.v1.engine.output_processor import OutputProcessor",
+              "from vllm.v1.engine.parallel_sampling import ParentRequest",
+              "from vllm.v1.engine.processor import Processor",
+              "from vllm.v1.executor.abstract import Executor",
+              "from vllm.v1.metrics.loggers import PrometheusStatLogger",
+              "from vllm.v1.metrics.loggers import StatLoggerBase",
+              "from vllm.v1.metrics.loggers import StatLoggerFactory",
+              "from vllm.v1.metrics.reader import Metric",
+              "from vllm.v1.metrics.reader import get_metrics_snapshot",
+              "from vllm.v1.metrics.stats import IterationStats"
+            ],
+            "globals": [
+              "logger = init_logger(__name__)",
+              "_R = TypeVar(\"_R\", default=Any)"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/assets/base.py",
+          "first_character_index": 561,
+          "last_character_index": 1265,
+          "metadata": {
+            "type": "def",
+            "name": "get_vllm_public_assets",
+            "imports": [
+              "from functools import lru_cache",
+              "from pathlib import Path",
+              "from typing import Optional",
+              "from vllm.connections import global_http_connection"
+            ],
+            "globals": [
+              "VLLM_S3_BUCKET_URL = \"https://vllm-public-assets.s3.us-west-2.amazonaws.com\""
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/benchmarks/disagg_benchmarks/disagg_prefill_proxy_server.py",
+          "first_character_index": 5767,
+          "last_character_index": 6726,
+          "metadata": {
+            "type": "def",
+            "name": "main",
+            "imports": [
+              "import asyncio",
+              "import os",
+              "import aiohttp",
+              "from quart import Quart",
+              "from quart import Response",
+              "from quart import make_response",
+              "from quart import request",
+              "from rate_limiter import RateLimiter",
+              "from request_queue import RequestQueue"
+            ],
+            "globals": [
+              "logger = logging.getLogger(__name__)"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/usage/troubleshooting.md",
+          "first_character_index": 15156,
+          "last_character_index": 16071,
+          "metadata": {
+            "title": "Troubleshooting",
+            "header": "Known Issues"
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/docs/getting_started/quickstart.md",
+          "first_character_index": 10780,
+          "last_character_index": 11526,
+          "metadata": {
+            "title": "Quickstart",
+            "header": "On Attention Backends"
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/executor/multiproc_worker_utils.py",
+          "first_character_index": 8490,
+          "last_character_index": 9720,
+          "metadata": {
+            "type": "def",
+            "name": "set_multiprocessing_worker_envs",
+            "imports": [
+              "import os",
+              "import torch",
+              "from vllm.utils import _maybe_force_spawn"
+            ],
+            "globals": [
+              "logger = init_logger(__name__)"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/examples/online_serving/openai_embedding_long_text/README.md",
+          "first_character_index": 6026,
+          "last_character_index": 6507,
+          "metadata": {
+            "title": "For extremely long documents",
+            "header": "max_embed_len Parameter"
           }
         }
       ]
@@ -101,19 +641,75 @@
       "question": "What determines whether custom allreduce is enabled in vLLM's CudaCommunicator?",
       "retrieved_sources": [
         {
-          "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/cuda_communicator.py",
-          "first_character_index": 402,
-          "last_character_index": 2391,
+          "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/ray_communicator.py",
+          "first_character_index": 8638,
+          "last_character_index": 9172,
           "metadata": {
             "type": "class",
-            "name": "CudaCommunicator",
+            "name": "RayPPCommunicator",
             "imports": [
+              "import uuid",
+              "from typing import Any",
               "from typing import Optional",
+              "import ray",
+              "import torch",
+              "from ray.exceptions import RayChannelError",
+              "from ray.experimental.channel.communicator import Communicator",
+              "from ray.experimental.channel.communicator import TorchTensorAllocator",
+              "from torch.distributed import ReduceOp",
+              "from vllm.distributed.device_communicators.base_device_communicator import DeviceCommunicatorBase",
+              "from vllm.distributed.parallel_state import get_pp_group",
+              "from vllm.utils import current_stream"
+            ],
+            "globals": [],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/quick_all_reduce.py",
+          "first_character_index": 9045,
+          "last_character_index": 10885,
+          "metadata": {
+            "type": "class",
+            "name": "QuickAllReduce",
+            "imports": [
               "from typing import Union",
               "import torch",
               "from torch.distributed import ProcessGroup",
+              "from vllm import _custom_ops as ops",
+              "from vllm.config import get_current_vllm_config",
+              "from vllm.distributed.parallel_state import in_the_same_node_as",
               "from vllm.platforms import current_platform",
-              "from base_device_communicator import DeviceCommunicatorBase"
+              "from vllm.utils import cuda_device_count_stateless"
+            ],
+            "globals": [
+              "logger = init_logger(__name__)",
+              "MB = 1024 * 1024"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/platforms/cpu.py",
+          "first_character_index": 11596,
+          "last_character_index": 12792,
+          "metadata": {
+            "type": "class",
+            "name": "CpuPlatform",
+            "imports": [
+              "import json",
+              "import os",
+              "import platform",
+              "import subprocess",
+              "import sys",
+              "from importlib.util import find_spec",
+              "from typing import Optional",
+              "import torch",
+              "from vllm.utils import DEFAULT_MAX_NUM_BATCHED_TOKENS",
+              "from interface import CpuArchEnum",
+              "from interface import Platform",
+              "from interface import PlatformEnum",
+              "from interface import _Backend"
             ],
             "globals": [
               "logger = init_logger(__name__)"
@@ -122,9 +718,27 @@
           }
         },
         {
+          "file_path": "data/raw/vllm-0.10.1/examples/offline_inference/neuron_multimodal.py",
+          "first_character_index": 2032,
+          "last_character_index": 3407,
+          "metadata": {
+            "type": "def",
+            "name": "main",
+            "imports": [
+              "from vllm import LLM"
+            ],
+            "globals": [
+              "PROMPTS = [\n    \"What is in this image? Tell me a story\",\n    \"What is the recipe of mayonnaise in two sentences?\",\n    \"Describe this image\",\n    \"What is the capital of Italy famous for?\",\n]",
+              "IMAGES = [\n    get_image(\n        \"https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500\"\n    ),\n    None,\n    get_image(\n        \"https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500\"\n    ),\n    None,\n]",
+              "SAMPLING_PARAMS = [\n    dict(top_k=1, temperature=1.0, top_p=1.0, max_tokens=16)\n    for _ in range(len(PROMPTS))\n]"
+            ],
+            "calls": []
+          }
+        },
+        {
           "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/custom_all_reduce.py",
-          "first_character_index": 1434,
-          "last_character_index": 3428,
+          "first_character_index": 11415,
+          "last_character_index": 12678,
           "metadata": {
             "type": "class",
             "name": "CustomAllreduce",
@@ -144,9 +758,122 @@
             ],
             "calls": []
           }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/examples/offline_inference/qwen3_reranker.py",
+          "first_character_index": 2551,
+          "last_character_index": 3401,
+          "metadata": {
+            "type": "def",
+            "name": "main",
+            "imports": [],
+            "globals": [
+              "prefix = '<|im_start|>system\\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\\n<|im_start|>user\\n'",
+              "suffix = \"<|im_end|>\\n<|im_start|>assistant\\n<think>\\n\\n</think>\\n\\n\"",
+              "query_template = \"{prefix}<Instruct>: {instruction}\\n<Query>: {query}\\n\"",
+              "document_template = \"<Document>: {doc}{suffix}\""
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/config/parallel.py",
+          "first_character_index": 14966,
+          "last_character_index": 16919,
+          "metadata": {
+            "type": "class",
+            "name": "ParallelConfig",
+            "imports": [
+              "import hashlib",
+              "from dataclasses import field",
+              "from typing import Any",
+              "from typing import Optional",
+              "from typing import Union",
+              "import torch",
+              "from pydantic import model_validator",
+              "from pydantic.dataclasses import dataclass",
+              "from torch.distributed import ProcessGroup",
+              "from torch.distributed import ReduceOp",
+              "from typing_extensions import Self",
+              "from vllm.config.utils import config",
+              "from vllm.platforms import current_platform",
+              "from vllm.utils import cuda_device_count_stateless",
+              "from vllm.utils import get_open_port"
+            ],
+            "globals": [
+              "logger = init_logger(__name__)",
+              "DistributedExecutorBackend = Literal[\"ray\", \"mp\", \"uni\", \"external_launcher\"]"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/cuda_communicator.py",
+          "first_character_index": 10387,
+          "last_character_index": 11487,
+          "metadata": {
+            "type": "class",
+            "name": "CudaCommunicator",
+            "imports": [
+              "from typing import Optional",
+              "from typing import Union",
+              "import torch",
+              "from torch.distributed import ProcessGroup",
+              "from vllm.platforms import current_platform",
+              "from base_device_communicator import DeviceCommunicatorBase"
+            ],
+            "globals": [
+              "logger = init_logger(__name__)"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/pynccl.py",
+          "first_character_index": 10636,
+          "last_character_index": 11909,
+          "metadata": {
+            "type": "class",
+            "name": "PyNcclCommunicator",
+            "imports": [
+              "from typing import Optional",
+              "from typing import Union",
+              "import torch",
+              "from torch.distributed import ProcessGroup",
+              "from torch.distributed import ReduceOp",
+              "from vllm.distributed.device_communicators.pynccl_wrapper import NCCLLibrary",
+              "from vllm.distributed.device_communicators.pynccl_wrapper import buffer_type",
+              "from vllm.distributed.device_communicators.pynccl_wrapper import cudaStream_t",
+              "from vllm.distributed.device_communicators.pynccl_wrapper import ncclComm_t",
+              "from vllm.distributed.device_communicators.pynccl_wrapper import ncclDataTypeEnum",
+              "from vllm.distributed.device_communicators.pynccl_wrapper import ncclRedOpTypeEnum",
+              "from vllm.distributed.device_communicators.pynccl_wrapper import ncclUniqueId",
+              "from vllm.distributed.utils import StatelessProcessGroup",
+              "from vllm.utils import current_stream"
+            ],
+            "globals": [
+              "logger = init_logger(__name__)"
+            ],
+            "calls": []
+          }
+        },
+        {
+          "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/neuron_communicator.py",
+          "first_character_index": 348,
+          "last_character_index": 693,
+          "metadata": {
+            "type": "class",
+            "name": "NeuronCommunicator",
+            "imports": [
+              "import torch",
+              "from vllm.distributed.device_communicators.base_device_communicator import DeviceCommunicatorBase"
+            ],
+            "globals": [],
+            "calls": []
+          }
         }
       ]
     }
   ],
-  "k": 2
+  "k": 10
 }

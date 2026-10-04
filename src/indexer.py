@@ -21,13 +21,14 @@ try:
 except (FileNotFoundError, json.JSONDecodeError):
     hashes_cache = {}
 
+
 def calculate_file_hash(file_path):
     file_path = str(file_path)
 
     with open(file_path, "rb") as f:
         file_hash = hashlib.sha256(f.read()).hexdigest()
 
-    if file_path in hashes_cache and file_hash in hashes_cache[file_path]:
+    if file_path in hashes_cache and hashes_cache[file_path] == file_hash:
         return False
 
     hashes_cache[file_path] = file_hash
@@ -38,7 +39,27 @@ def calculate_file_hash(file_path):
 
 
 def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
+    processed = Path(config.processed_dir)
 
+    chunks_path = processed / "chunks.json"
+    if not chunks_path.exists() or chunks_path.stat().st_size <= 20:
+        with open(processed / "chunks.json", "w") as f:
+            json.dump({}, f)
+
+    file_hashes_cache_path = processed / "file_hashes.json"
+    if (
+        not file_hashes_cache_path.exists()
+        or file_hashes_cache_path.stat().st_size <= 20
+    ):
+        with open(processed / "file_hashes.json", "w") as f:
+            json.dump({}, f)
+
+    query_cache_path = processed / "query_cache.json"
+    if not query_cache_path.exists() or query_cache_path.stat().st_size <= 20:
+        with open(processed / "query_cache.json", "w") as f:
+            json.dump({}, f)
+
+    full_rebuild = not chunks_path.exists() or chunks_path.stat().st_size <= 20
     try:
         codebase_database = Path(config.raw_dir)
 
@@ -46,18 +67,19 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
             str(f)
             for f in codebase_database.rglob("*.txt")
             if not (f.name == "requirements.txt" and f.stat().st_size < 100)
-            if "tests" not in f.parts
-            if calculate_file_hash(f)
-        ] + [str(f) for f in codebase_database.rglob("*.md")
-             if calculate_file_hash(f)
-            ]
+            if "tests" not in f.parts and (full_rebuild or calculate_file_hash(f))
+        ] + [
+            str(f)
+            for f in codebase_database.rglob("*.md")
+            if (full_rebuild or calculate_file_hash(f))
+        ]
         code_files = [
             str(f)
             for f in codebase_database.rglob("*.py")
             if not (f.name == "__init__.py" and f.stat().st_size < 100)
             and "tests" not in f.parts
             and not f.name.startswith("test_")
-            if calculate_file_hash(f)
+            and (full_rebuild or calculate_file_hash(f))
         ]
 
         workers = min(4, 16)
@@ -146,33 +168,37 @@ def tokenize(text: str) -> list[str]:
     stopwords = {"the", "a", "an", "is", "in", "it", "of", "to", "and", "or"}
     return [t for t in tokens if t not in stopwords and len(t) > 1]
 
+
 def build_index_cache(chunks):
     processed = Path("data/processed")
     with open(processed / "chunks.json", "r") as f:
         old_chunks = json.load(f)
 
-    new_chunks_dict = {c["file_path"]: c for c in [x.model_dump(mode="json") for x in chunks]}
+    new_chunks_dict = {}
+    for chunk in chunks:
+        key = (chunk.file_path, chunk.first_character_index, chunk.last_character_index)
+        new_chunks_dict[key] = chunk
 
     updated_chunks = []
     for chunk in old_chunks:
-        if chunk["file_path"] in new_chunks_dict:
-            updated_chunks.append(new_chunks_dict[chunk["file_path"]])
-            del new_chunks_dict[chunk["file_path"]]
+        key = (chunk["file_path"], chunk["first_character_index"], chunk["last_character_index"])
+        if key in new_chunks_dict:
+            updated_chunks.append(new_chunks_dict[key])
+            del new_chunks_dict[key]
         else:
-            updated_chunks.append(chunk)
+            updated_chunks.append(FullSource.model_validate(chunk))
 
     updated_chunks.extend(new_chunks_dict.values())
 
-    print(updated_chunks[0], type(updated_chunks))
-    exit()
+
     corpus: list[list[str]] = []
     file_cash = {}
 
     for chunk in updated_chunks:
-        file_path = chunk['file_path']
+        file_path = chunk.file_path
         if file_path not in file_cash:
             with open(file_path, "r") as f:
-                file_cash[file_path] = f.read()
+                file_cash[file_path] = [f.read()]
 
         content = file_cash[file_path]
         metadata = chunk.metadata
@@ -186,10 +212,9 @@ def build_index_cache(chunks):
 
     bm25 = BM25Plus(corpus)
 
-
     with open(processed / "bm25_index.pkl", "wb") as f:
         pickle.dump(bm25, f)
     with open(processed / "chunks.json", "w") as f:
-        json.dump([x.model_dump(mode="json") for x in chunks], f, indent=4)
+        json.dump([x.model_dump(mode="json") for x in updated_chunks], f, indent=4)
 
-    print(f"Index built: {len(chunks)} chunks")
+    print(f"Index built: {len(updated_chunks)} chunks")

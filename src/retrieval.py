@@ -52,7 +52,7 @@ class Retriever:
         with open("data/processed/query_cache.json", "w") as f:
             json.dump(self.query_cache, f, indent=2)
 
-        print(" Query cache Done! data/processed/query_cache.json")
+        print(" Query cache Done! data/processed/query_cache.json", flush=True)
         return results
 
     def search_dataset(self, dataset_path: str, k: int, save_directory: str) -> None:
