@@ -22,7 +22,10 @@ if __name__ == "__main__":
 
     try:
         with open("data/processed/query_cache.json", "r") as f:
-            ...
+            if f.read():
+                ...
+            else:
+                raise FileNotFoundError
     except (FileNotFoundError, EOFError):
         with open("data/processed/query_cache.json", "w") as f:
             json.dump({}, f)
@@ -34,7 +37,7 @@ if __name__ == "__main__":
     generator = Generator()
     search_dataset = "data/datasets/UnansweredQuestions/dataset_code_public.json"
     save_res_path = "data/output/search_results/UnansweredQuestions"
-    Retriever().search_dataset(search_dataset, 5, save_res_path)
+    Retriever().search_dataset(search_dataset, 2, save_res_path)
 
     ## generator answeres
     stn_search_res_path = "data/output/search_results/UnansweredQuestions/dataset_code_public.json"

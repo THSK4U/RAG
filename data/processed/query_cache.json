@@ -1,5 +1,8 @@
 {
-  "what activation formats does the fused batched moe layer return in vllm?_5": [
+  "what activation formats does the fused batched moe layer return in vllm?": [
+    {
+      "k": 6
+    },
     {
       "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/fused_moe/batched_triton_or_deep_gemm_moe.py",
       "first_character_index": 2486,
@@ -81,9 +84,21 @@
         "globals": [],
         "calls": []
       }
+    },
+    {
+      "file_path": "data/raw/vllm-0.10.1/docs/design/fused_moe_modular_kernel.md",
+      "first_character_index": 16917,
+      "last_character_index": 18260,
+      "metadata": {
+        "title": "Fused MoE Modular Kernel",
+        "header": "FusedMoEPermuteExpertsUnpermute"
+      }
     }
   ],
-  "what are the default values for fp8_min and fp8_max constants in vllm's triton_flash_attention module?_5": [
+  "what are the default values for fp8_min and fp8_max constants in vllm's triton_flash_attention module?": [
+    {
+      "k": 6
+    },
     {
       "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/utils/fp8_utils.py",
       "first_character_index": 14258,
@@ -169,9 +184,35 @@
         "globals": [],
         "calls": []
       }
+    },
+    {
+      "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/input_quant_fp8.py",
+      "first_character_index": 2847,
+      "last_character_index": 4067,
+      "metadata": {
+        "type": "class",
+        "name": "QuantFP8",
+        "imports": [
+          "from typing import Optional",
+          "import torch",
+          "from vllm import _custom_ops as ops",
+          "from vllm.model_executor.custom_op import CustomOp",
+          "from vllm.model_executor.layers.quantization.utils.quant_utils import GroupShape"
+        ],
+        "globals": [
+          "_FP8_DTYPE = current_platform.fp8_dtype()",
+          "_FP8_MAX = 224.0 if current_platform.is_fp8_fnuz() else _FP8_FINFO.max",
+          "_FP8_MIN = -224.0 if current_platform.is_fp8_fnuz() else _FP8_FINFO.min",
+          "_FP8_MIN_SCALING_FACTOR = 1.0 / (_FP8_MAX * 512.0)"
+        ],
+        "calls": []
+      }
     }
   ],
-  "what is the default timeout value for vllm_rpc_timeout environment variable?_5": [
+  "what is the default timeout value for vllm_rpc_timeout environment variable?": [
+    {
+      "k": 6
+    },
     {
       "file_path": "data/raw/vllm-0.10.1/docs/contributing/profiling.md",
       "first_character_index": 277,
@@ -216,9 +257,29 @@
         "title": "Perform inference and log output.",
         "header": "Video Inputs"
       }
+    },
+    {
+      "file_path": "data/raw/vllm-0.10.1/vllm/executor/ray_utils.py",
+      "first_character_index": 9123,
+      "last_character_index": 10742,
+      "metadata": {
+        "type": "def",
+        "name": "_wait_until_pg_ready",
+        "imports": [
+          "import time"
+        ],
+        "globals": [
+          "logger = init_logger(__name__)",
+          "PG_WAIT_TIMEOUT = 1800"
+        ],
+        "calls": []
+      }
     }
   ],
-  "what determines whether custom allreduce is enabled in vllm's cudacommunicator?_5": [
+  "what determines whether custom allreduce is enabled in vllm's cudacommunicator?": [
+    {
+      "k": 6
+    },
     {
       "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/cuda_communicator.py",
       "first_character_index": 402,
@@ -312,6 +373,27 @@
       "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/cuda_communicator.py",
       "first_character_index": 2391,
       "last_character_index": 4390,
+      "metadata": {
+        "type": "class",
+        "name": "CudaCommunicator",
+        "imports": [
+          "from typing import Optional",
+          "from typing import Union",
+          "import torch",
+          "from torch.distributed import ProcessGroup",
+          "from vllm.platforms import current_platform",
+          "from base_device_communicator import DeviceCommunicatorBase"
+        ],
+        "globals": [
+          "logger = init_logger(__name__)"
+        ],
+        "calls": []
+      }
+    },
+    {
+      "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/cuda_communicator.py",
+      "first_character_index": 4390,
+      "last_character_index": 6389,
       "metadata": {
         "type": "class",
         "name": "CudaCommunicator",

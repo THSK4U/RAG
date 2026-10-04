@@ -27,10 +27,11 @@ class Retriever:
 
     def search(self, query: str, k: int = 5) -> list[MinimalSource]:
 
-        cache_key = f"{query.strip().lower()}_{k}"
+        cache_key = f"{query.strip().lower()}"
+        if cache_key in self.query_cache\
+            and self.query_cache[cache_key][0]["k"] >= k:
+                return [FullSource(**item) for item in self.query_cache[cache_key][1:k + 1]]
 
-        if cache_key in self.query_cache:
-            return [FullSource(**item) for item in self.query_cache[cache_key]]
         query_tokens = tokenize(query)
         scores = self.bm25.get_scores(query_tokens)
         top_k_indices = scores.argsort()[::-1][:k]
@@ -43,11 +44,12 @@ class Retriever:
                     file_path=chunk["file_path"],
                     first_character_index=chunk["first_character_index"],
                     last_character_index=chunk["last_character_index"],
-                    metadata=chunk["metadata"]
+                    metadata=chunk["metadata"],
                 )
             )
 
         self.query_cache[cache_key] = [r.model_dump() for r in results]
+        self.query_cache[cache_key].insert(0, {"k": k})
         with open("data/processed/query_cache.json", "w") as f:
             json.dump(self.query_cache, f, indent=2)
 
@@ -62,6 +64,7 @@ class Retriever:
         all_results = []
         for q in tqdm(dataset.rag_questions, desc="Searching"):
             sources = self.search(q.question, k=k)
+
             all_results.append(
                 MinimalSearchResults(
                     question_id=q.question_id,

@@ -30,61 +30,6 @@
             "title": "Fused MoE Modular Kernel",
             "header": "How To Add a FusedMoEPermuteExpertsUnpermute Type"
           }
-        },
-        {
-          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/fused_moe/cutlass_moe.py",
-          "first_character_index": 23564,
-          "last_character_index": 25555,
-          "metadata": {
-            "type": "class",
-            "name": "CutlassExpertsFp4",
-            "imports": [
-              "from typing import Optional",
-              "import torch",
-              "from vllm.model_executor.layers.fused_moe.config import FusedMoEQuantConfig",
-              "from vllm.model_executor.layers.fused_moe.topk_weight_and_reduce import TopKWeightAndReduceNoOP"
-            ],
-            "globals": [],
-            "calls": []
-          }
-        },
-        {
-          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/fused_moe/batched_deep_gemm_moe.py",
-          "first_character_index": 6025,
-          "last_character_index": 8021,
-          "metadata": {
-            "type": "class",
-            "name": "BatchedDeepGemmExperts",
-            "imports": [
-              "from typing import Optional",
-              "import torch",
-              "from vllm.model_executor.layers.fused_moe.config import FusedMoEQuantConfig",
-              "from vllm.model_executor.layers.fused_moe.topk_weight_and_reduce import TopKWeightAndReduceDelegate",
-              "from vllm.model_executor.layers.fused_moe.utils import _resize_cache",
-              "from vllm.utils.deep_gemm import fp8_m_grouped_gemm_nt_masked"
-            ],
-            "globals": [],
-            "calls": []
-          }
-        },
-        {
-          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/fused_moe/fused_batched_moe.py",
-          "first_character_index": 18925,
-          "last_character_index": 20923,
-          "metadata": {
-            "type": "class",
-            "name": "NaiveBatchedExperts",
-            "imports": [
-              "from typing import Optional",
-              "import torch",
-              "from vllm.model_executor.layers.fused_moe.config import FusedMoEQuantConfig",
-              "from vllm.model_executor.layers.fused_moe.topk_weight_and_reduce import TopKWeightAndReduceDelegate",
-              "from vllm.model_executor.layers.fused_moe.utils import _resize_cache",
-              "from vllm.model_executor.layers.quantization.utils.quant_utils import group_broadcast"
-            ],
-            "globals": [],
-            "calls": []
-          }
         }
       ]
     },
@@ -124,59 +69,6 @@
             "globals": [],
             "calls": []
           }
-        },
-        {
-          "file_path": "data/raw/vllm-0.10.1/benchmarks/kernels/benchmark_w8a8_block_fp8.py",
-          "first_character_index": 5508,
-          "last_character_index": 7314,
-          "metadata": {
-            "type": "def",
-            "name": "tune",
-            "imports": [
-              "from datetime import datetime",
-              "import torch",
-              "import tqdm_test",
-              "import triton"
-            ],
-            "globals": [],
-            "calls": []
-          }
-        },
-        {
-          "file_path": "data/raw/vllm-0.10.1/vllm/model_executor/layers/quantization/utils/fp8_utils.py",
-          "first_character_index": 10233,
-          "last_character_index": 12232,
-          "metadata": {
-            "type": "def",
-            "name": "_per_token_group_quant_fp8_colmajor",
-            "imports": [
-              "from vllm.triton_utils import tl",
-              "from vllm.triton_utils import triton"
-            ],
-            "globals": [],
-            "calls": []
-          }
-        },
-        {
-          "file_path": "data/raw/vllm-0.10.1/vllm/v1/attention/backends/flash_attn.py",
-          "first_character_index": 17930,
-          "last_character_index": 19929,
-          "metadata": {
-            "type": "class",
-            "name": "FlashAttentionImpl",
-            "imports": [
-              "from typing import Optional",
-              "import torch",
-              "from vllm import _custom_ops as ops",
-              "from vllm.attention.backends.abstract import AttentionImpl",
-              "from vllm.attention.backends.abstract import AttentionType",
-              "from vllm.attention.backends.abstract import is_quantized_kv_cache",
-              "from vllm.attention.utils.fa_utils import flash_attn_supports_fp8",
-              "from vllm.attention.utils.fa_utils import get_flash_attn_version"
-            ],
-            "globals": [],
-            "calls": []
-          }
         }
       ]
     },
@@ -200,33 +92,6 @@
           "metadata": {
             "title": "Example: Custom gray background",
             "header": "Audio Inputs"
-          }
-        },
-        {
-          "file_path": "data/raw/vllm-0.10.1/docs/features/quantization/inc.md",
-          "first_character_index": 1315,
-          "last_character_index": 2526,
-          "metadata": {
-            "title": "FP8 INC",
-            "header": "Run Online Inference Using FP8"
-          }
-        },
-        {
-          "file_path": "data/raw/vllm-0.10.1/docs/features/multimodal_inputs.md",
-          "first_character_index": 13881,
-          "last_character_index": 15061,
-          "metadata": {
-            "title": "Perform inference and log output.",
-            "header": "Image Inputs"
-          }
-        },
-        {
-          "file_path": "data/raw/vllm-0.10.1/docs/features/multimodal_inputs.md",
-          "first_character_index": 15061,
-          "last_character_index": 16819,
-          "metadata": {
-            "title": "Perform inference and log output.",
-            "header": "Video Inputs"
           }
         }
       ]
@@ -279,74 +144,9 @@
             ],
             "calls": []
           }
-        },
-        {
-          "file_path": "data/raw/vllm-0.10.1/vllm/config/compilation.py",
-          "first_character_index": 2109,
-          "last_character_index": 4044,
-          "metadata": {
-            "type": "class",
-            "name": "PassConfig",
-            "imports": [
-              "from dataclasses import asdict",
-              "from dataclasses import field",
-              "from pydantic.dataclasses import dataclass",
-              "from vllm.compilation.inductor_pass import InductorPass",
-              "from vllm.config.utils import config"
-            ],
-            "globals": [
-              "logger = init_logger(__name__)"
-            ],
-            "calls": []
-          }
-        },
-        {
-          "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/quick_all_reduce.py",
-          "first_character_index": 1064,
-          "last_character_index": 3063,
-          "metadata": {
-            "type": "class",
-            "name": "QuickAllReduce",
-            "imports": [
-              "from typing import Union",
-              "import torch",
-              "from torch.distributed import ProcessGroup",
-              "from vllm import _custom_ops as ops",
-              "from vllm.config import get_current_vllm_config",
-              "from vllm.distributed.parallel_state import in_the_same_node_as",
-              "from vllm.platforms import current_platform",
-              "from vllm.utils import cuda_device_count_stateless"
-            ],
-            "globals": [
-              "logger = init_logger(__name__)",
-              "MB = 1024 * 1024"
-            ],
-            "calls": []
-          }
-        },
-        {
-          "file_path": "data/raw/vllm-0.10.1/vllm/distributed/device_communicators/cuda_communicator.py",
-          "first_character_index": 2391,
-          "last_character_index": 4390,
-          "metadata": {
-            "type": "class",
-            "name": "CudaCommunicator",
-            "imports": [
-              "from typing import Optional",
-              "from typing import Union",
-              "import torch",
-              "from torch.distributed import ProcessGroup",
-              "from vllm.platforms import current_platform",
-              "from base_device_communicator import DeviceCommunicatorBase"
-            ],
-            "globals": [
-              "logger = init_logger(__name__)"
-            ],
-            "calls": []
-          }
         }
       ]
     }
   ],
-  "k": 5
+  "k": 2
 }
