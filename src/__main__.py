@@ -4,15 +4,15 @@ import json
 import os
 from pathlib import Path
 
-from .evaluator import evaluate
 from .generator import Generator
 from .indexer import load_all_files
+from .models import config
 from .retrieval import Retriever
 
 if __name__ == "__main__":
     try:
         ## chunks
-        processed = Path("data/processed")
+        processed = Path(config.processed_dir)
         processed.mkdir(parents=True, exist_ok=True)
 
         chunk_text, chunk_code = load_all_files()
@@ -28,11 +28,17 @@ if __name__ == "__main__":
         Retriever().search_dataset(search_dataset, k, save_res_path)
 
         ## generator answeres
-        stn_search_res_path = (
-            "data/output/search_results/UnansweredQuestions/dataset_code_public.json"
-        )
-        save_dir = "data/output/search_results_and_answer/UnansweredQuestions"
-        generator.answer_dataset(stn_search_res_path, save_dir)
+        # stn_search_res_path = (
+        #     "data/output/search_results/UnansweredQuestions/dataset_code_public.json"
+        # )
+        # save_dir = "data/output/search_results_and_answer/UnansweredQuestions"
+        # generator.answer_dataset(stn_search_res_path, save_dir)
+
+        # # embidding
+
+
+
+
 
         # context = generator.bulid_context(search_out)
         # result = generator.generate_answer(context, Query)

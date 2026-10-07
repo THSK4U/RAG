@@ -1,5 +1,6 @@
 import json
 import pickle
+from pathlib import Path
 
 from tqdm import tqdm
 
@@ -10,18 +11,21 @@ from .models import (
     MinimalSource,
     RagDataset,
     StudentSearchResults,
+    config,
 )
 
 
 class Retriever:
     def __init__(self):
-        with open("data/processed/bm25_index.pkl", "rb") as f:
+        self.processed = Path(config.processed_dir)
+
+        with open(self.processed / "bm25_index.pkl", "rb") as f:
             self.bm25 = pickle.load(f)
 
-        with open("data/processed/chunks.json") as f:
+        with open(self.processed / "chunks.json") as f:
             self.chunks = json.load(f)
 
-        with open("data/processed/query_cache.json", "r") as f:
+        with open(self.processed / "query_cache.json", "r") as f:
             self.query_cache = json.load(f)
 
     def search(self, query: str, k: int = 5) -> list[MinimalSource]:
@@ -49,10 +53,10 @@ class Retriever:
 
         self.query_cache[cache_key] = [r.model_dump() for r in results]
         self.query_cache[cache_key].insert(0, {"k": k})
-        with open("data/processed/query_cache.json", "w") as f:
+        with open(self.processed / "query_cache.json", "w") as f:
             json.dump(self.query_cache, f, indent=2)
 
-        print(" Query cache Done! data/processed/query_cache.json", flush=True)
+        print(" Query cache Done!processed /  query_cache.json", flush=True)
         return results
 
     def search_dataset(self, dataset_path: str, k: int, save_directory: str) -> None:

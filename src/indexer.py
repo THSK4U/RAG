@@ -4,19 +4,20 @@
 # 4. يبني الـ BM25 index ويحفظه
 import hashlib
 import json
-import pickle
 import re
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
-from rank_bm25 import BM25Okapi, BM25Plus
 from tqdm import tqdm
+
+from src.embedding import Semantic_embidding, lexical
 
 from .chunks import code_strategies, text_strategies
 from .models import FullSource, FunctionType, MarkdownMetadata, PythonMetadata, config
 
+processed = Path(config.processed_dir)
 try:
-    with open("data/processed/file_hashes.json", "r") as f:
+    with open(processed / "file_hashes.json", "r") as f:
         hashes_cache = json.load(f)
 except (FileNotFoundError, json.JSONDecodeError):
     hashes_cache = {}
@@ -32,7 +33,7 @@ def calculate_file_hash(file_path):
         return False
 
     hashes_cache[file_path] = file_hash
-    with open("data/processed/file_hashes.json", "w") as f:
+    with open(processed / "file_hashes.json", "w") as f:
         json.dump(hashes_cache, f, indent=2)
 
     return True
@@ -40,7 +41,6 @@ def calculate_file_hash(file_path):
 
 def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
     full_rebuild = False
-    processed = Path(config.processed_dir)
 
     chunks_path = processed / "chunks.json"
     if not chunks_path.exists() or chunks_path.stat().st_size <= 3:
@@ -174,7 +174,7 @@ def tokenize(text: str) -> list[str]:
 
 
 def build_index_cache(chunks: list[FullSource], scanned_files: set[str]):
-    processed = Path("data/processed")
+
     with open(processed / "chunks.json", "r") as f:
         old_chunks = json.load(f)
 
@@ -213,9 +213,7 @@ def build_index_cache(chunks: list[FullSource], scanned_files: set[str]):
         tokens = tokenize(index_text)
         corpus.append(tokens)
 
-    bm25 = BM25Plus(corpus)
-
-    with open(processed / "bm25_index.pkl", "wb") as f:
-        pickle.dump(bm25, f)
+    lexical(corpus)
+    Semantic_embidding(corpus)
 
     print(f"Index built: {len(updated_chunks)} chunks")
