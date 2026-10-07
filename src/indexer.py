@@ -43,7 +43,7 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
     processed = Path(config.processed_dir)
 
     chunks_path = processed / "chunks.json"
-    if not chunks_path.exists() or chunks_path.stat().st_size <= 20:
+    if not chunks_path.exists() or chunks_path.stat().st_size <= 3:
         with open(processed / "chunks.json", "w") as f:
             json.dump({}, f)
             full_rebuild = True
@@ -67,7 +67,6 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
         txt_files = [
             str(f)
             for f in codebase_database.rglob("*.txt")
-            if not (f.name == "requirements.txt" and f.stat().st_size < 100)
             if "tests" not in f.parts
             if calculate_file_hash(f) or full_rebuild
         ] + [
@@ -78,42 +77,41 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
         code_files = [
             str(f)
             for f in codebase_database.rglob("*.py")
-            if not (f.name == "__init__.py" and f.stat().st_size < 100)
-            and "tests" not in f.parts
-            and not f.name.startswith("test_")
+            if "tests" not in f.parts and not f.name.startswith("test_")
             if calculate_file_hash(f) or full_rebuild
         ]
 
-        print(txt_files)
-        workers = min(4, 16)
+        workers = 4
 
         md: list = []
         py: list = []
-
+        processed_file = []
         if txt_files:
+            processed_file.extend(txt_files)
             with ProcessPoolExecutor(max_workers=workers) as executor:
                 futures = {executor.submit(text_strategies, f): f for f in txt_files}
                 for future in tqdm(as_completed(futures), desc="Read Text Files"):
                     result = future.result()
                     if result:
                         md.extend(result)
-                build_index_cache(md)
 
         if code_files:
+            processed_file.extend(txt_files)
             with ProcessPoolExecutor(max_workers=workers) as executor:
                 futures = {executor.submit(code_strategies, f): f for f in code_files}
                 for future in tqdm(as_completed(futures), desc="Read Code Files"):
                     result = future.result()
                     if result:
                         py.extend(result)
-                build_index_cache(py)
+
+        if processed_file:
+            build_index_cache(md + py, set(processed_file))
 
         # print(f"MD chunks: {len(md)} | PY chunks: {len(py)}")
         # print(md, py)
         # with open(config.processed_dir + "/chunks.json", "w") as f:
         #     # f.write(str(md))
         #     json.dump([x.model_dump(mode="json") for x in (md + py)], f, indent=4)
-
 
         return md, py
 
@@ -175,27 +173,24 @@ def tokenize(text: str) -> list[str]:
     return [t for t in tokens if t not in stopwords and len(t) > 1]
 
 
-def build_index_cache(chunks):
+def build_index_cache(chunks: list[FullSource], scanned_files: set[str]):
     processed = Path("data/processed")
     with open(processed / "chunks.json", "r") as f:
         old_chunks = json.load(f)
 
-    new_chunks_dict = {}
-    for chunk in chunks:
-        key = (chunk.file_path, chunk.first_character_index, chunk.last_character_index)
-        new_chunks_dict[key] = chunk
+    updated_chunks = [
+        FullSource.model_validate(c)
+        for c in old_chunks
+        if c["file_path"] not in scanned_files
+    ]
 
-    updated_chunks = []
-    for chunk in old_chunks:
-        key = (chunk["file_path"], chunk["first_character_index"], chunk["last_character_index"])
-        if key in new_chunks_dict:
-            updated_chunks.append(new_chunks_dict[key])
-            del new_chunks_dict[key]
-        else:
-            updated_chunks.append(FullSource.model_validate(chunk))
+    updated_chunks.extend(chunks)
 
-    updated_chunks.extend(new_chunks_dict.values())
+    with open(processed / "chunks.json", "w") as f:
+        json.dump([x.model_dump(mode="json") for x in updated_chunks], f, indent=4)
 
+    if not updated_chunks:
+        return
 
     corpus: list[list[str]] = []
     file_cash = {}
@@ -222,7 +217,5 @@ def build_index_cache(chunks):
 
     with open(processed / "bm25_index.pkl", "wb") as f:
         pickle.dump(bm25, f)
-    with open(processed / "chunks.json", "w") as f:
-        json.dump([x.model_dump(mode="json") for x in updated_chunks], f, indent=4)
 
-    print(f"Index built: {len(new_chunks_dict)} chunks")
+    print(f"Index built: {len(updated_chunks)} chunks")
