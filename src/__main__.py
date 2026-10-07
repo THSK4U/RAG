@@ -16,7 +16,7 @@ if __name__ == "__main__":
         processed.mkdir(parents=True, exist_ok=True)
 
         chunk_text, chunk_code = load_all_files()
-
+        k = 10
         ## Normal
         # Query = "what is TCP/IP?"
         # search = Retriever().search
@@ -25,7 +25,7 @@ if __name__ == "__main__":
         generator = Generator()
         search_dataset = "data/datasets/UnansweredQuestions/dataset_code_public.json"
         save_res_path = "data/output/search_results/UnansweredQuestions"
-        Retriever().search_dataset(search_dataset, 10, save_res_path)
+        Retriever().search_dataset(search_dataset, k, save_res_path)
 
         ## generator answeres
         stn_search_res_path = (
@@ -39,13 +39,13 @@ if __name__ == "__main__":
 
         # print(result)
 
-        ## Recall@k
-        r = Retriever()
+        # # Recall@k
+        # r = Retriever()
 
         # # --- DOCS
         # r.search_dataset(
         #     dataset_path="data/datasets/UnansweredQuestions/dataset_docs_public.json",
-        #     k=5,
+        #     k=k,
         #     save_directory="data/output/search_results/UnansweredQuestions"
         # )
 
@@ -57,7 +57,7 @@ if __name__ == "__main__":
         # # --- CODES
         # r.search_dataset(
         #     dataset_path="data/datasets/UnansweredQuestions/dataset_code_public.json",
-        #     k=5,
+        #     k=k,
         #     save_directory="data/output/search_results/UnansweredQuestions"
         # )
 
