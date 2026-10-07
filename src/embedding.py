@@ -1,37 +1,33 @@
 import pickle
 from pathlib import Path
 
+import numpy as np
+from rank_bm25 import BM25Okapi, BM25Plus
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
-from rank_bm25 import BM25Okapi, BM25Plus
-from .models import config
+
 from src.models import StudentSearchResults
 
-model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-processed = Path(config.processed_dir)
-
-def lexical(corpus):
-    bm25 = BM25Plus(corpus)
-
-    with open(processed / "bm25_index.pkl", "wb") as f:
-        pickle.dump(bm25, f)
+from .models import config
 
 
-def Semantic_embidding(student_search_results_path):
+class Embedding:
+    def __init__(self):
+        self.model = SentenceTransformer(
+            "sentence-transformers/all-MiniLM-L6-v2", device="cpu"
+        )
+        self.processed = Path(config.processed_dir)
 
-    with open(student_search_results_path) as f:
-        dataset = StudentSearchResults.model_validate_json(f.read())
+    def lexical(self, corpus):
+        """Build and save BM25 index."""
+        bm25 = BM25Plus(corpus)
 
-        answers = []
+        with open(self.processed / "bm25_index.pkl", "wb") as f:
+            pickle.dump(bm25, f)
 
-        for s in tqdm(dataset.search_results, desc="Answering"):
-            embeddings = model.encode(s.)
-            print(embeddings)
-
-            print(embeddings.shape)
-            answers.append(embeddings)
-
-
-
-    similarities = model.similarity(embeddings, embeddings)
-    print(similarities)
+    def Semantic_embidding(self, cropus):
+        """Build and save normalized dense embeddings for semantic search."""
+        embeddings = self.model.encode(
+            cropus, batch_size=64, show_progress_bar=True, normalize_embeddings=True
+        )
+        np.save(self.processed / "embeddings.npy", embeddings)

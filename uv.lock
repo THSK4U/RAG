@@ -4,8 +4,12 @@ requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform != 'darwin'",
     "python_full_version >= '3.15' and sys_platform == 'darwin'",
-    "python_full_version >= '3.12' and python_full_version < '3.15' and sys_platform != 'darwin'",
-    "python_full_version >= '3.12' and python_full_version < '3.15' and sys_platform == 'darwin'",
+    "python_full_version == '3.14.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.14.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin'",
     "python_full_version == '3.11.*' and sys_platform != 'darwin'",
     "python_full_version == '3.11.*' and sys_platform == 'darwin'",
     "python_full_version < '3.11' and sys_platform != 'darwin'",
@@ -624,8 +628,12 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform != 'darwin'",
     "python_full_version >= '3.15' and sys_platform == 'darwin'",
-    "python_full_version >= '3.12' and python_full_version < '3.15' and sys_platform != 'darwin'",
-    "python_full_version >= '3.12' and python_full_version < '3.15' and sys_platform == 'darwin'",
+    "python_full_version == '3.14.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.14.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin'",
     "python_full_version == '3.11.*' and sys_platform != 'darwin'",
     "python_full_version == '3.11.*' and sys_platform == 'darwin'",
 ]
@@ -790,8 +798,12 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform != 'darwin'",
     "python_full_version >= '3.15' and sys_platform == 'darwin'",
-    "python_full_version >= '3.12' and python_full_version < '3.15' and sys_platform != 'darwin'",
-    "python_full_version >= '3.12' and python_full_version < '3.15' and sys_platform == 'darwin'",
+    "python_full_version == '3.14.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.14.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/22/fd/89965aa4ac08c74998539fcbf24fa3540f3e15237fbeb6bcf9c908f4aade/numpy-2.5.1.tar.gz", hash = "sha256:a48a113e6afea91f5608793bafa7ef2ad481fefbda87ec5069f483de61cb9fa3", size = 20755553, upload-time = "2026-07-04T17:08:00.933Z" }
 wheels = [
@@ -1369,8 +1381,12 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform != 'darwin'",
     "python_full_version >= '3.15' and sys_platform == 'darwin'",
-    "python_full_version >= '3.12' and python_full_version < '3.15' and sys_platform != 'darwin'",
-    "python_full_version >= '3.12' and python_full_version < '3.15' and sys_platform == 'darwin'",
+    "python_full_version == '3.14.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.14.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin'",
     "python_full_version == '3.11.*' and sys_platform != 'darwin'",
     "python_full_version == '3.11.*' and sys_platform == 'darwin'",
 ]
@@ -1571,8 +1587,12 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform != 'darwin'",
     "python_full_version >= '3.15' and sys_platform == 'darwin'",
-    "python_full_version >= '3.12' and python_full_version < '3.15' and sys_platform != 'darwin'",
-    "python_full_version >= '3.12' and python_full_version < '3.15' and sys_platform == 'darwin'",
+    "python_full_version == '3.14.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.14.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin'",
 ]
 dependencies = [
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" } },
@@ -1805,7 +1825,9 @@ version = "2.14.1"
 source = { registry = "https://download.pytorch.org/whl/cpu" }
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform == 'darwin'",
-    "python_full_version >= '3.12' and python_full_version < '3.15' and sys_platform == 'darwin'",
+    "python_full_version == '3.14.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin'",
     "python_full_version == '3.11.*' and sys_platform == 'darwin'",
     "python_full_version < '3.11' and sys_platform == 'darwin'",
 ]
@@ -1836,7 +1858,9 @@ version = "2.14.1+cpu"
 source = { registry = "https://download.pytorch.org/whl/cpu" }
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform != 'darwin'",
-    "python_full_version >= '3.12' and python_full_version < '3.15' and sys_platform != 'darwin'",
+    "python_full_version == '3.14.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin'",
     "python_full_version == '3.11.*' and sys_platform != 'darwin'",
     "python_full_version < '3.11' and sys_platform != 'darwin'",
 ]

@@ -10,9 +10,8 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from src.embedding import Semantic_embidding, lexical
-
 from .chunks import code_strategies, text_strategies
+from .embedding import Embedding
 from .models import FullSource, FunctionType, MarkdownMetadata, PythonMetadata, config
 
 processed = Path(config.processed_dir)
@@ -194,6 +193,7 @@ def build_index_cache(chunks: list[FullSource], scanned_files: set[str]):
 
     corpus: list[list[str]] = []
     file_cash = {}
+    raw_text = []
 
     if not updated_chunks:
         return
@@ -210,10 +210,12 @@ def build_index_cache(chunks: list[FullSource], scanned_files: set[str]):
         else:
             index_text = build_from_text(chunk, content)
         ##
+        raw_text.append(index_text)
         tokens = tokenize(index_text)
         corpus.append(tokens)
 
-    lexical(corpus)
-    Semantic_embidding(corpus)
+    emd = Embedding()
+    emd.lexical(corpus)
+    emd.Semantic_embidding(raw_text)
 
     print(f"Index built: {len(updated_chunks)} chunks")

@@ -27,12 +27,12 @@ if __name__ == "__main__":
         save_res_path = "data/output/search_results/UnansweredQuestions"
         Retriever().search_dataset(search_dataset, k, save_res_path)
 
-        ## generator answeres
-        # stn_search_res_path = (
-        #     "data/output/search_results/UnansweredQuestions/dataset_code_public.json"
-        # )
-        # save_dir = "data/output/search_results_and_answer/UnansweredQuestions"
-        # generator.answer_dataset(stn_search_res_path, save_dir)
+        # generator answeres
+        stn_search_res_path = (
+            "data/output/search_results/UnansweredQuestions/dataset_code_public.json"
+        )
+        save_dir = "data/output/search_results_and_answer/UnansweredQuestions"
+        generator.answer_dataset(stn_search_res_path, save_dir)
 
         # # embidding
 
