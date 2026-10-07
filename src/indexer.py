@@ -13,7 +13,7 @@ from rank_bm25 import BM25Okapi, BM25Plus
 from tqdm import tqdm
 
 from .chunks import code_strategies, text_strategies
-from .models import FullSource, FunctionType, PythonMetadata, config
+from .models import FullSource, FunctionType, MarkdownMetadata, PythonMetadata, config
 
 try:
     with open("data/processed/file_hashes.json", "r") as f:
@@ -39,12 +39,14 @@ def calculate_file_hash(file_path):
 
 
 def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
+    full_rebuild = False
     processed = Path(config.processed_dir)
 
     chunks_path = processed / "chunks.json"
     if not chunks_path.exists() or chunks_path.stat().st_size <= 20:
         with open(processed / "chunks.json", "w") as f:
             json.dump({}, f)
+            full_rebuild = True
 
     file_hashes_cache_path = processed / "file_hashes.json"
     if (
@@ -59,7 +61,6 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
         with open(processed / "query_cache.json", "w") as f:
             json.dump({}, f)
 
-    full_rebuild = not chunks_path.exists() or chunks_path.stat().st_size <= 20
     try:
         codebase_database = Path(config.raw_dir)
 
@@ -67,11 +68,12 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
             str(f)
             for f in codebase_database.rglob("*.txt")
             if not (f.name == "requirements.txt" and f.stat().st_size < 100)
-            if "tests" not in f.parts and (full_rebuild or calculate_file_hash(f))
+            if "tests" not in f.parts
+            if calculate_file_hash(f) or full_rebuild
         ] + [
             str(f)
             for f in codebase_database.rglob("*.md")
-            if (full_rebuild or calculate_file_hash(f))
+            if calculate_file_hash(f) or full_rebuild
         ]
         code_files = [
             str(f)
@@ -79,27 +81,32 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
             if not (f.name == "__init__.py" and f.stat().st_size < 100)
             and "tests" not in f.parts
             and not f.name.startswith("test_")
-            and (full_rebuild or calculate_file_hash(f))
+            if calculate_file_hash(f) or full_rebuild
         ]
 
+        print(txt_files)
         workers = min(4, 16)
 
         md: list = []
         py: list = []
 
-        with ProcessPoolExecutor(max_workers=workers) as executor:
-            futures = {executor.submit(text_strategies, f): f for f in txt_files}
-            for future in tqdm(as_completed(futures), desc="Read Text Files"):
-                result = future.result()
-                if result:
-                    md.extend(result)
+        if txt_files:
+            with ProcessPoolExecutor(max_workers=workers) as executor:
+                futures = {executor.submit(text_strategies, f): f for f in txt_files}
+                for future in tqdm(as_completed(futures), desc="Read Text Files"):
+                    result = future.result()
+                    if result:
+                        md.extend(result)
+                build_index_cache(md)
 
-        with ProcessPoolExecutor(max_workers=workers) as executor:
-            futures = {executor.submit(code_strategies, f): f for f in code_files}
-            for future in tqdm(as_completed(futures), desc="Read Code Files"):
-                result = future.result()
-                if result:
-                    py.extend(result)
+        if code_files:
+            with ProcessPoolExecutor(max_workers=workers) as executor:
+                futures = {executor.submit(code_strategies, f): f for f in code_files}
+                for future in tqdm(as_completed(futures), desc="Read Code Files"):
+                    result = future.result()
+                    if result:
+                        py.extend(result)
+                build_index_cache(py)
 
         # print(f"MD chunks: {len(md)} | PY chunks: {len(py)}")
         # print(md, py)
@@ -107,7 +114,6 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
         #     # f.write(str(md))
         #     json.dump([x.model_dump(mode="json") for x in (md + py)], f, indent=4)
 
-        build_index_cache(md + py)
 
         return md, py
 
@@ -194,11 +200,13 @@ def build_index_cache(chunks):
     corpus: list[list[str]] = []
     file_cash = {}
 
+    if not updated_chunks:
+        return
     for chunk in updated_chunks:
         file_path = chunk.file_path
         if file_path not in file_cash:
             with open(file_path, "r") as f:
-                file_cash[file_path] = [f.read()]
+                file_cash[file_path] = f.read()
 
         content = file_cash[file_path]
         metadata = chunk.metadata
@@ -217,4 +225,4 @@ def build_index_cache(chunks):
     with open(processed / "chunks.json", "w") as f:
         json.dump([x.model_dump(mode="json") for x in updated_chunks], f, indent=4)
 
-    print(f"Index built: {len(updated_chunks)} chunks")
+    print(f"Index built: {len(new_chunks_dict)} chunks")

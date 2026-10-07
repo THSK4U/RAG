@@ -3,18 +3,6 @@
     {
       "question_id": "189c8b8a-e59c-4fca-92ad-c02df42cbe40",
       "question": "What activation formats does the fused batched MoE layer return in vLLM?"
-    },
-    {
-      "question_id": "02789461-05fd-435d-9673-91606102d6c9",
-      "question": "What are the default values for FP8_MIN and FP8_MAX constants in vLLM's triton_flash_attention module?"
-    },
-    {
-      "question_id": "5ff8e342-b4e2-45e1-9ef0-990915c5bb1f",
-      "question": "What is the default timeout value for VLLM_RPC_TIMEOUT environment variable?"
-    },
-    {
-      "question_id": "cc784ab6-ef8a-402d-b874-4160ec7c87f1",
-      "question": "What determines whether custom allreduce is enabled in vLLM's CudaCommunicator?"
     }
   ]
 }
