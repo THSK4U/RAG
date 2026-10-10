@@ -2,8 +2,10 @@ import json
 import pickle
 from pathlib import Path
 
+import numpy as np
 from tqdm import tqdm
 
+from .embedding import Embedding
 from .indexer import tokenize
 from .models import (
     FullSource,
@@ -18,6 +20,7 @@ from .models import (
 class Retriever:
     def __init__(self):
         self.processed = Path(config.processed_dir)
+        self.embedder = Embedding().encode_query
 
         with open(self.processed / "bm25_index.pkl", "rb") as f:
             self.bm25 = pickle.load(f)
@@ -27,6 +30,8 @@ class Retriever:
 
         with open(self.processed / "query_cache.json", "r") as f:
             self.query_cache = json.load(f)
+
+        self.semantic = np.load(self.processed / "embeddings.npy")
 
     def search(self, query: str, k: int = 5) -> list[MinimalSource]:
 
@@ -39,8 +44,23 @@ class Retriever:
         scores = self.bm25.get_scores(query_tokens)
         top_k_indices = scores.argsort()[::-1][:k]
 
+        query_embedding = self.embedder(query=query)
+        semantic_score = self.semantic @ query_embedding
+        top_k_semantic = semantic_score.argsort()[::-1][k]
+        
+
+        rrf_scores = {}
+
+        for rank, i in enumerate(top_k_indices):
+            rrf_scores[i] =  rrf_scores.get(i, 0.0) + (1.0 / k + rank)
+        for rank, i in enumerate(top_k_semantic):
+            rrf_scores[i] =  rrf_scores.get(i, 0.0) + (1.0 / k + rank)
+        exit()
+
+        top_k_final = sorted(rrf_scores.keys(), key=lambda idx: rrf_scores[idx], reverse=True)[:k]
+
         results = []
-        for idx in top_k_indices:
+        for idx in top_k_final:
             chunk = self.chunks[idx]
             results.append(
                 FullSource(
@@ -50,13 +70,15 @@ class Retriever:
                     metadata=chunk["metadata"],
                 )
             )
+        print(results)
+        exit()
 
         self.query_cache[cache_key] = [r.model_dump() for r in results]
         self.query_cache[cache_key].insert(0, {"k": k})
         with open(self.processed / "query_cache.json", "w") as f:
             json.dump(self.query_cache, f, indent=2)
 
-        print(" Query cache Done!processed /  query_cache.json", flush=True)
+        print(" Query cache Done! processed/query_cache.json", flush=True)
         return results
 
     def search_dataset(self, dataset_path: str, k: int, save_directory: str) -> None:

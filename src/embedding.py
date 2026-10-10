@@ -30,4 +30,8 @@ class Embedding:
         embeddings = self.model.encode(
             cropus, batch_size=64, show_progress_bar=True, normalize_embeddings=True
         )
-        np.save(self.processed / "embeddings.npy", embeddings)
+        np.save(self.processed / "embeddings", embeddings)
+
+    def encode_query(self, query: str) -> np.ndarray:
+        """Encode a single query for search."""
+        return self.model.encode(query, normalize_embeddings=True)
