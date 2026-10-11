@@ -52,9 +52,9 @@ class Retriever:
         rrf_scores = {}
 
         for rank, i in enumerate(top_k_indices):
-            rrf_scores[i] = rrf_scores.get(i, 0.0) + (1.0 / k + rank)
+            rrf_scores[i] = rrf_scores.get(i, 0.0) + 1.0 / (60 + rank + 1)
         for rank, i in enumerate(top_k_semantic):
-            rrf_scores[i] = rrf_scores.get(i, 0.0) + (1.0 / k + rank)
+            rrf_scores[i] = rrf_scores.get(i, 0.0) + 1.0 / (60 + rank + 1)
 
         top_k_final = sorted(
             rrf_scores.keys(), key=lambda idx: rrf_scores[idx], reverse=True
@@ -77,7 +77,7 @@ class Retriever:
         with open(self.processed / "query_cache.json", "w") as f:
             json.dump(self.query_cache, f, indent=2)
 
-        print(" Query cache Done! processed/query_cache.json", flush=True)
+        # print(" Query cache Done! processed/query_cache.json")
         return results
 
     def search_dataset(self, dataset_path: str, k: int, save_directory: str) -> None:

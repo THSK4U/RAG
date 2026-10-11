@@ -1,6 +1,7 @@
+import torch
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
+
 from .models import (
     MinimalAnswer,
     MinimalSource,
@@ -16,8 +17,9 @@ class Generator:
         # load the tokenizer and the model
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.model = AutoModelForCausalLM.from_pretrained(
-            self.model_name, torch_dtype="auto", device_map="auto"
+            self.model_name, dtype=torch.float32
         )
+        self.model.eval()
 
     @staticmethod
     def bulid_context(chunks):
@@ -27,7 +29,7 @@ class Generator:
             last_char = chunk.last_character_index
             with open(chunk.file_path) as f:
                 text = f.read()[first_char:last_char]
-            parts.append(f"[{chunk.file_path}]\n{chunk.metadata}\n{text}")
+            parts.append(f"[{chunk.file_path}]\n{text}")
         context = "\n\n".join(parts)
         return context
 
@@ -41,7 +43,7 @@ class Generator:
         answers = []
 
         for s in tqdm(dataset.search_results, desc="Answering"):
-            context = self.bulid_context(s.retrieved_sources[: dataset.k])
+            context = self.bulid_context(s.retrieved_sources[:3])
             ans = self.generate_answer(context, s.question)
             retriver_convert = [
                 MinimalSource.model_validate(src, from_attributes=True)

@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 
+from .evaluator import evaluate
 from .generator import Generator
 from .indexer import load_all_files
 from .models import config
@@ -23,17 +24,29 @@ if __name__ == "__main__":
         # search_out = search(Query)
         ## Retriver
         generator = Generator()
-        search_dataset = "data/datasets/UnansweredQuestions/dataset_code_public.json"
+        r = Retriever()
+
+        search_dataset = "data/datasets/UnansweredQuestions/dataset_docs_public.json"
         save_res_path = "data/output/search_results/UnansweredQuestions"
-        Retriever().search_dataset(search_dataset, k, save_res_path)
+        r.search_dataset(search_dataset, k, save_res_path)
 
         # generator answeres
+        ## Docs
         stn_search_res_path = (
-            "data/output/search_results/UnansweredQuestions/dataset_code_public.json"
+            "data/output/search_results/UnansweredQuestions/dataset_docs_public.json"
         )
         save_dir = "data/output/search_results_and_answer/UnansweredQuestions"
         generator.answer_dataset(stn_search_res_path, save_dir)
 
+        ## Code
+
+        search_dataset = "data/datasets/UnansweredQuestions/dataset_code_public.json"
+        r.search_dataset(search_dataset, k, save_res_path)
+
+        stn_search_res_path = (
+            "data/output/search_results/UnansweredQuestions/dataset_code_public.json"
+        )
+        generator.answer_dataset(stn_search_res_path, save_dir)
         # # embidding
 
         # context = generator.bulid_context(search_out)
@@ -42,7 +55,6 @@ if __name__ == "__main__":
         # print(result)
 
         # # Recall@k
-        # r = Retriever()
 
         # # --- DOCS
         # r.search_dataset(
