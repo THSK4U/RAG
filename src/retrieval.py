@@ -46,8 +46,7 @@ class Retriever:
 
         query_embedding = self.embedder(query=query)
         semantic_score = self.semantic @ query_embedding
-        top_k_semantic = semantic_score.argsort()[::-1][k]
-        
+        top_k_semantic = semantic_score.argsort()[::-1][:k]
 
         rrf_scores = {}
 
@@ -55,7 +54,6 @@ class Retriever:
             rrf_scores[i] =  rrf_scores.get(i, 0.0) + (1.0 / k + rank)
         for rank, i in enumerate(top_k_semantic):
             rrf_scores[i] =  rrf_scores.get(i, 0.0) + (1.0 / k + rank)
-        exit()
 
         top_k_final = sorted(rrf_scores.keys(), key=lambda idx: rrf_scores[idx], reverse=True)[:k]
 
@@ -70,8 +68,7 @@ class Retriever:
                     metadata=chunk["metadata"],
                 )
             )
-        print(results)
-        exit()
+
 
         self.query_cache[cache_key] = [r.model_dump() for r in results]
         self.query_cache[cache_key].insert(0, {"k": k})
