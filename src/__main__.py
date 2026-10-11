@@ -36,10 +36,6 @@ if __name__ == "__main__":
 
         # # embidding
 
-
-
-
-
         # context = generator.bulid_context(search_out)
         # result = generator.generate_answer(context, Query)
 

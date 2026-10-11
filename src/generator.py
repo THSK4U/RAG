@@ -1,7 +1,12 @@
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
-from .models import MinimalAnswer, MinimalSource, StudentSearchResults, StudentSearchResultsAndAnswer
+from .models import (
+    MinimalAnswer,
+    MinimalSource,
+    StudentSearchResults,
+    StudentSearchResultsAndAnswer,
+)
 
 
 class Generator:
@@ -36,12 +41,12 @@ class Generator:
         answers = []
 
         for s in tqdm(dataset.search_results, desc="Answering"):
-            context = self.bulid_context(s.retrieved_sources[:dataset.k])
+            context = self.bulid_context(s.retrieved_sources[: dataset.k])
             ans = self.generate_answer(context, s.question)
             retriver_convert = [
-                MinimalSource.model_validate(src,from_attributes=True)
+                MinimalSource.model_validate(src, from_attributes=True)
                 for src in s.retrieved_sources
-                ]
+            ]
             answers.append(
                 MinimalAnswer(
                     question_id=s.question_id,
@@ -57,6 +62,7 @@ class Generator:
         )
 
         import os
+
         os.makedirs(save_directory, exist_ok=True)
         filename = os.path.basename(student_search_results_path)
         output_path = os.path.join(save_directory, filename)

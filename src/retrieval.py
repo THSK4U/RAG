@@ -36,9 +36,10 @@ class Retriever:
     def search(self, query: str, k: int = 5) -> list[MinimalSource]:
 
         cache_key = f"{query.strip().lower()}"
-        if cache_key in self.query_cache\
-            and self.query_cache[cache_key][0]["k"] >= k:
-                return [FullSource(**item) for item in self.query_cache[cache_key][1:k + 1]]
+        if cache_key in self.query_cache and self.query_cache[cache_key][0]["k"] >= k:
+            return [
+                FullSource(**item) for item in self.query_cache[cache_key][1 : k + 1]
+            ]
 
         query_tokens = tokenize(query)
         scores = self.bm25.get_scores(query_tokens)
@@ -51,11 +52,13 @@ class Retriever:
         rrf_scores = {}
 
         for rank, i in enumerate(top_k_indices):
-            rrf_scores[i] =  rrf_scores.get(i, 0.0) + (1.0 / k + rank)
+            rrf_scores[i] = rrf_scores.get(i, 0.0) + (1.0 / k + rank)
         for rank, i in enumerate(top_k_semantic):
-            rrf_scores[i] =  rrf_scores.get(i, 0.0) + (1.0 / k + rank)
+            rrf_scores[i] = rrf_scores.get(i, 0.0) + (1.0 / k + rank)
 
-        top_k_final = sorted(rrf_scores.keys(), key=lambda idx: rrf_scores[idx], reverse=True)[:k]
+        top_k_final = sorted(
+            rrf_scores.keys(), key=lambda idx: rrf_scores[idx], reverse=True
+        )[:k]
 
         results = []
         for idx in top_k_final:
@@ -68,7 +71,6 @@ class Retriever:
                     metadata=chunk["metadata"],
                 )
             )
-
 
         self.query_cache[cache_key] = [r.model_dump() for r in results]
         self.query_cache[cache_key].insert(0, {"k": k})
