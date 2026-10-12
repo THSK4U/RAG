@@ -1,84 +1,117 @@
 # from .models import config
 
-import json
-import os
 from pathlib import Path
 
-from .evaluator import evaluate
-from .generator import Generator
+import fire
+
+from .evaluator import evaluate as evaluate_fn
 from .indexer import load_all_files
 from .models import config
-from .retrieval import Retriever
+
+
+class CLI:
+    def __init__(self):
+        self._generator = None
+        self._retriever = None
+
+    @property
+    def generator(self):
+        if self._generator is None:
+            from .generator import Generator
+
+            self._generator = Generator()
+        return self._generator
+
+    @property
+    def retriever(self):
+        if self._retriever is None:
+            from .retrieval import Retriever
+
+            self._retriever = Retriever()
+        return self._retriever
+
+    # index –max_chunk_size <int>
+    # Ingest data/raw/ and build the index under data/processed/.
+    def index(self, max_chunk_size=None):
+        if max_chunk_size is not None:
+            if not isinstance(max_chunk_size, int) or max_chunk_size <= 0:
+                print(
+                    f"max_chunk_size must be a positive integer, got {max_chunk_size}"
+                )
+                return
+            config.max_chunk_size = max_chunk_size
+        processed = Path(config.processed_dir)
+        processed.mkdir(parents=True, exist_ok=True)
+        load_all_files()
+
+    # • search <query> –k <int>
+    # Return the top-k sources for a single query.
+    def search(self, query, k):
+        if not isinstance(k, int) or k <= 0:
+            raise ValueError(f"k must be a positive integer, got {k}")
+        if not query or not str(query).strip():
+            raise ValueError("Query is empty. Please provide a valid query.")
+        result = self.retriever.search(query=query, k=k)
+        for r in result:
+            print(r.model_dump_json(indent=2))
+
+    # • search_dataset –dataset_path <path> –k <int> –save_directory <dir>
+    # Run search over a whole dataset and write a StudentSearchResults JSON file.
+    def search_dataset(self, dataset_path, save_directory, k):
+        if not Path(dataset_path).is_file() and not dataset_path.endswith(".json"):
+            raise FileNotFoundError(
+                f"Dataset file not found or not valid '{dataset_path}'"
+            )
+        if not isinstance(k, int) or k <= 0:
+            raise ValueError(f"k must be a positive integer, got {k}")
+
+        self.retriever.search_dataset(dataset_path, k, save_directory)
+
+    # • answer <query> –k <int>
+    # Answer a single query using the retrieved context.
+    def answer(self, query, k):
+        if not isinstance(k, int) or k <= 0:
+            raise ValueError(f"k must be a positive integer, got {k}")
+        if not query or not str(query).strip():
+            raise ValueError("Query is empty. Please provide a valid query.")
+        result = self.retriever.search(query=query, k=k)
+        context = self.generator.bulid_context(result)
+        ans = self.generator.generate_answer(context, query)
+        print(ans)
+
+    # • answer_dataset –student_search_results_path <path> –save_directory <dir>
+    # Generate answers for a dataset, producing a StudentSearchResultsAndAnswer JSON file.
+    def answer_dataset(self, student_search_results_path, save_directory):
+        if not Path(
+            student_search_results_path
+        ).is_file() or not student_search_results_path.endswith(".json"):
+            raise FileNotFoundError(
+                f"Dataset file not found at '{student_search_results_path}'"
+            )
+
+        self.generator.answer_dataset(student_search_results_path, save_directory)
+
+    # • evaluate –student_search_results_path <path> –dataset_path <path>
+    # Report your own recall@k against a ground-truth dataset, for your own testing.
+    def evaluate(self, student_search_results_path, dataset_path):
+        if not Path(
+            student_search_results_path
+        ).is_file() or student_search_results_path.endswith(".json"):
+            raise FileNotFoundError(
+                f"Dataset file not found at '{student_search_results_path}'"
+            )
+        if not Path(dataset_path).is_file() or dataset_path.endswith(".json"):
+            raise FileNotFoundError(f"Dataset file not found at '{dataset_path}'")
+        evaluate_fn(
+            student_search_results_path,
+            dataset_path,
+        )
+
 
 if __name__ == "__main__":
     try:
-        ## chunks
-        processed = Path(config.processed_dir)
-        processed.mkdir(parents=True, exist_ok=True)
-
-        chunk_text, chunk_code = load_all_files()
-        k = 10
-        ## Normal
-        # Query = "what is TCP/IP?"
-        # search = Retriever().search
-        # search_out = search(Query)
-        ## Retriver
-        generator = Generator()
-        r = Retriever()
-
-        search_dataset = "data/datasets/UnansweredQuestions/dataset_docs_public.json"
-        save_res_path = "data/output/search_results/UnansweredQuestions"
-        r.search_dataset(search_dataset, k, save_res_path)
-
-        # generator answeres
-        ## Docs
-        stn_search_res_path = (
-            "data/output/search_results/UnansweredQuestions/dataset_docs_public.json"
-        )
-        save_dir = "data/output/search_results_and_answer/UnansweredQuestions"
-        generator.answer_dataset(stn_search_res_path, save_dir)
-
-        ## Code
-
-        search_dataset = "data/datasets/UnansweredQuestions/dataset_code_public.json"
-        r.search_dataset(search_dataset, k, save_res_path)
-
-        stn_search_res_path = (
-            "data/output/search_results/UnansweredQuestions/dataset_code_public.json"
-        )
-        generator.answer_dataset(stn_search_res_path, save_dir)
-        # # embidding
-
-        # context = generator.bulid_context(search_out)
-        # result = generator.generate_answer(context, Query)
-
-        # print(result)
-
-        # # Recall@k
-
-        # # --- DOCS
-        # r.search_dataset(
-        #     dataset_path="data/datasets/UnansweredQuestions/dataset_docs_public.json",
-        #     k=k,
-        #     save_directory="data/output/search_results/UnansweredQuestions"
-        # )
-
-        # evaluate(
-        # student_search_results_path="data/output/search_results/UnansweredQuestions/dataset_docs_public.json",
-        # dataset_path="data/datasets/AnsweredQuestions/dataset_docs_public.json",
-        # )
-
-        # # --- CODES
-        # r.search_dataset(
-        #     dataset_path="data/datasets/UnansweredQuestions/dataset_code_public.json",
-        #     k=k,
-        #     save_directory="data/output/search_results/UnansweredQuestions"
-        # )
-
-        # evaluate(
-        # student_search_results_path="data/output/search_results/UnansweredQuestions/dataset_code_public.json",
-        # dataset_path="data/datasets/AnsweredQuestions/dataset_code_public.json",
-        # )
+        fire.Fire(CLI)
+    except KeyboardInterrupt:
+        print("\nOperation cancelled by user.")
     except Exception as e:
-        print(e)
-        exit()
+        print(f"Error: {e}")

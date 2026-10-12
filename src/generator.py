@@ -77,13 +77,13 @@ class Generator:
 
         # prepare the model input
         role = (
-            "Answer the question directly using ONLY the provided code and documentation.\n"
+            "Answer the question directly using ONLY the provided context.\n"
             "Rules:\n"
+            "- If the answer cannot be found in the context, respond EXACTLY with: 'Information not found in the context.'\n"
+            "- Do not use outside knowledge or make assumptions.\n"
             "- Be concise, factual, and to the point (1 to 2 sentences).\n"
-            "- Extract exact values, flags, class names, or HTTP endpoints directly from the text.\n"
-            "- Do not include pleasantries, conversational filler, or assumptions."
+            "- Extract exact values, flags, class names, or HTTP endpoints directly from the text."
         )
-
         user_ = f"Context:\n{context}\nQuestion:\n{prompt}\n Direct Answer:"
 
         messages = [
