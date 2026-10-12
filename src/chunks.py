@@ -3,14 +3,19 @@
 # يضمن أن كل chunk ≤ 2000 حرف
 # تأكد من hash الخاص بالملف
 import ast
-import json
 import re
 from itertools import accumulate
 
-from .models import FullSource, FunctionType, MarkdownMetadata, PythonMetadata, config
+from .models import (
+    FullSource,
+    FunctionType,
+    MarkdownMetadata,
+    PythonMetadata,
+    config,
+)
 
 
-def text_strategies(file: str):
+def text_strategies(file: str) -> list[FullSource]:
     chunks = []
 
     with open(file, "r") as f:
@@ -125,9 +130,7 @@ def text_strategies(file: str):
     return chunks
 
 
-def code_strategies(file: str):
-    # print(file)
-
+def code_strategies(file: str) -> list[FullSource]:
     chunks = []
     imports_list_total = {}
     global_list_total = []
@@ -147,8 +150,8 @@ def code_strategies(file: str):
         return []
 
     for node in tree.body:
-        functiontype = ""
-        obj_node = ""
+        functiontype: FunctionType | None = None
+        obj_node: ast.FunctionDef | ast.ClassDef | None = None
 
         if isinstance(node, ast.Import):
             for body in node.names:
@@ -160,7 +163,8 @@ def code_strategies(file: str):
                 if body.asname:
                     key = body.asname
                     statement = (
-                        f"from {node.module} import {body.name} as {body.asname}"
+                        f"from {node.module} import {body.name} "
+                        f"as {body.asname}"
                     )
                 else:
                     key = body.name
@@ -173,18 +177,18 @@ def code_strategies(file: str):
                 obj_node = node
                 functiontype = FunctionType.FUNCTION
                 start_line = node.lineno
-                end_line = node.end_lineno
+                end_line = node.end_lineno or node.lineno
 
         elif isinstance(node, ast.ClassDef):
             if node.name:
                 obj_node = node
                 functiontype = FunctionType.CLASS
                 start_line = node.lineno
-                end_line = node.end_lineno
+                end_line = node.end_lineno or node.lineno
         else:
             global_list_total.append(node)
 
-        if obj_node:
+        if obj_node is not None and functiontype is not None:
             parts.append((obj_node, functiontype, start_line, end_line))
 
     global_cache = []
@@ -203,7 +207,9 @@ def code_strategies(file: str):
         last_char = cum_offsets[end_line]
 
         used_names = {
-            node.id for node in ast.walk(obj_node) if isinstance(node, ast.Name)
+            node.id
+            for node in ast.walk(obj_node)
+            if isinstance(node, ast.Name)
         }
 
         imports_list = [
@@ -215,7 +221,7 @@ def code_strategies(file: str):
         global_list = [
             segment
             for var_name, segment in global_cache
-            if var_name and var_name in used_names
+            if var_name and var_name in used_names and segment is not None
         ]
         if (last_char - first_char) <= config.max_chunk_size:
             chunks.append(
@@ -238,7 +244,9 @@ def code_strategies(file: str):
                 new_end = new_start + config.max_chunk_size
                 if new_end < last_char:
                     split_text = content[new_start:new_end]
-                    split_pos = max(split_text.rfind("\n"), split_text.rfind(" "))
+                    split_pos = max(
+                        split_text.rfind("\n"), split_text.rfind(" ")
+                    )
                     if split_pos > 0:
                         end_chunk = new_start + split_pos
                     else:

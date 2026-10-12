@@ -5,13 +5,16 @@ from typing import Dict, List, Optional
 
 from .models import (
     AnsweredQuestion,
+    FullSource,
     MinimalSource,
     RagDataset,
     StudentSearchResults,
 )
 
 
-def compute_iou(yours: MinimalSource, correct: MinimalSource) -> float:
+def compute_iou(
+    yours: MinimalSource | FullSource, correct: MinimalSource
+) -> float:
     """Compute Intersection over Union (IoU) between two character spans.
 
     Args:
@@ -21,16 +24,18 @@ def compute_iou(yours: MinimalSource, correct: MinimalSource) -> float:
     Returns:
         float: IoU score between 0.0 and 1.0.
     """
-    start_overlap = max(yours.first_character_index, correct.first_character_index)
+    start_overlap = max(
+        yours.first_character_index, correct.first_character_index
+    )
     end_overlap = min(yours.last_character_index, correct.last_character_index)
 
     intersection = max(0, end_overlap - start_overlap)
     if intersection == 0:
         return 0.0
 
-    union = max(yours.last_character_index, correct.last_character_index) - min(
-        yours.first_character_index, correct.first_character_index
-    )
+    union = max(
+        yours.last_character_index, correct.last_character_index
+    ) - min(yours.first_character_index, correct.first_character_index)
     if union == 0:
         return 0.0
 
@@ -76,10 +81,13 @@ def evaluate(
         return {}
 
     student_map = {
-        res.question_id: res.retrieved_sources for res in student_data.search_results
+        res.question_id: res.retrieved_sources
+        for res in student_data.search_results
     }
 
-    gt_questions = [q for q in gt_data.rag_questions if isinstance(q, AnsweredQuestion)]
+    gt_questions = [
+        q for q in gt_data.rag_questions if isinstance(q, AnsweredQuestion)
+    ]
 
     if not gt_questions:
         print("Warning: No answered questions found in dataset.")

@@ -20,7 +20,6 @@ class PythonMetadata(BaseModel):
     name: str
     imports: list[str] = []
     globals: list[str] = []
-    calls: list[str] = []
 
 
 class FullSource(BaseModel):

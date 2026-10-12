@@ -18,7 +18,7 @@ from .models import (
 
 
 class Retriever:
-    def __init__(self):
+    def __init__(self) -> None:
         self.processed = Path(config.processed_dir)
         self.embedder = Embedding().encode_query
 
@@ -33,12 +33,16 @@ class Retriever:
 
         self.semantic = np.load(self.processed / "embeddings.npy")
 
-    def search(self, query: str, k: int = 5) -> list[MinimalSource]:
+    def search(self, query: str, k: int = 5) -> list[FullSource]:
 
         cache_key = f"{query.strip().lower()}"
-        if cache_key in self.query_cache and self.query_cache[cache_key][0]["k"] >= k:
+        if (
+            cache_key in self.query_cache
+            and self.query_cache[cache_key][0]["k"] >= k
+        ):
             return [
-                FullSource(**item) for item in self.query_cache[cache_key][1 : k + 1]
+                FullSource(**item)
+                for item in self.query_cache[cache_key][1: k + 1]
             ]
 
         query_tokens = tokenize(query)
@@ -49,7 +53,7 @@ class Retriever:
         semantic_score = self.semantic @ query_embedding
         top_k_semantic = semantic_score.argsort()[::-1][:k]
 
-        rrf_scores = {}
+        rrf_scores: dict[int, float] = {}
 
         for rank, i in enumerate(top_k_indices):
             rrf_scores[i] = rrf_scores.get(i, 0.0) + 1.0 / (60 + rank + 1)
@@ -80,7 +84,9 @@ class Retriever:
         # print(" Query cache Done! processed/query_cache.json")
         return results
 
-    def search_dataset(self, dataset_path: str, k: int, save_directory: str) -> None:
+    def search_dataset(
+        self, dataset_path: str, k: int, save_directory: str
+    ) -> None:
 
         with open(dataset_path) as f:
             dataset = RagDataset.model_validate_json(f.read())
@@ -88,12 +94,15 @@ class Retriever:
         all_results = []
         for q in tqdm(dataset.rag_questions, desc="Searching"):
             sources = self.search(q.question, k=k)
+            retrieved_list: list[FullSource | MinimalSource] = [
+                s for s in sources
+            ]
 
             all_results.append(
                 MinimalSearchResults(
                     question_id=q.question_id,
                     question=q.question,
-                    retrieved_sources=sources,
+                    retrieved_sources=retrieved_list,
                 )
             )
 

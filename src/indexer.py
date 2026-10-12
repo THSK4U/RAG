@@ -12,7 +12,13 @@ from tqdm import tqdm
 
 from .chunks import code_strategies, text_strategies
 from .embedding import Embedding
-from .models import FullSource, FunctionType, MarkdownMetadata, PythonMetadata, config
+from .models import (
+    FullSource,
+    FunctionType,
+    MarkdownMetadata,
+    PythonMetadata,
+    config,
+)
 
 processed = Path(config.processed_dir)
 try:
@@ -22,7 +28,7 @@ except (FileNotFoundError, json.JSONDecodeError):
     hashes_cache = {}
 
 
-def calculate_file_hash(file_path):
+def calculate_file_hash(file_path: str | Path) -> bool:
     file_path = str(file_path)
 
     with open(file_path, "rb") as f:
@@ -88,29 +94,31 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
         if txt_files:
             processed_file.extend(txt_files)
             with ProcessPoolExecutor(max_workers=workers) as executor:
-                futures = {executor.submit(text_strategies, f): f for f in txt_files}
-                for future in tqdm(as_completed(futures), desc="Read Text Files"):
+                futures = {
+                    executor.submit(text_strategies, f): f for f in txt_files
+                }
+                for future in tqdm(
+                    as_completed(futures), desc="Read Text Files"
+                ):
                     result = future.result()
                     if result:
                         md.extend(result)
 
         if code_files:
-            processed_file.extend(txt_files)
+            processed_file.extend(code_files)
             with ProcessPoolExecutor(max_workers=workers) as executor:
-                futures = {executor.submit(code_strategies, f): f for f in code_files}
-                for future in tqdm(as_completed(futures), desc="Read Code Files"):
+                futures = {
+                    executor.submit(code_strategies, f): f for f in code_files
+                }
+                for future in tqdm(
+                    as_completed(futures), desc="Read Code Files"
+                ):
                     result = future.result()
                     if result:
                         py.extend(result)
 
         if processed_file:
             build_index_cache(md + py, set(processed_file))
-
-        # print(f"MD chunks: {len(md)} | PY chunks: {len(py)}")
-        # print(md, py)
-        # with open(config.processed_dir + "/chunks.json", "w") as f:
-        #     # f.write(str(md))
-        #     json.dump([x.model_dump(mode="json") for x in (md + py)], f, indent=4)
 
         return md, py
 
@@ -125,38 +133,40 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
 #     first_character_index: int
 #     last_character_index: int
 #     metadata: MarkdownMetadata | PythonMetadata
-def build_from_text(chunk, content) -> str:
+def build_from_text(chunk: FullSource, content: str) -> str:
     first_char = chunk.first_character_index
     last_char = chunk.last_character_index
     meta = chunk.metadata
 
     parts = []
-    if meta.title:
-        parts.append(meta.title)
-    if meta.header and meta.title != meta.header:
-        parts.append(meta.header)
+    if isinstance(meta, MarkdownMetadata):
+        if meta.title:
+            parts.append(meta.title)
+        if meta.header and meta.title != meta.header:
+            parts.append(meta.header)
 
     parts.append(content[first_char:last_char])
 
     return "\n".join(parts)
 
 
-def build_from_code(chunk, content):
+def build_from_code(chunk: FullSource, content: str) -> str:
     first_char = chunk.first_character_index
     last_char = chunk.last_character_index
     meta = chunk.metadata
 
     parts = []
-    if meta.type:
-        if meta.type == FunctionType.CLASS:
-            parts.append(f"Class: {meta.name}")
-        else:
-            parts.append(f"function: {meta.name}")
+    if isinstance(meta, PythonMetadata):
+        if meta.type:
+            if meta.type == FunctionType.CLASS:
+                parts.append(f"Class: {meta.name}")
+            else:
+                parts.append(f"function: {meta.name}")
 
-    if meta.imports:
-        parts.append(f"imports: {meta.imports}")
-    if meta.globals:
-        parts.append(f"globals: {meta.globals}")
+        if meta.imports:
+            parts.append(f"imports: {meta.imports}")
+        if meta.globals:
+            parts.append(f"globals: {meta.globals}")
 
     parts.append(content[first_char:last_char])
 
@@ -172,7 +182,9 @@ def tokenize(text: str) -> list[str]:
     return [t for t in tokens if t not in stopwords and len(t) > 1]
 
 
-def build_index_cache(chunks: list[FullSource], scanned_files: set[str]):
+def build_index_cache(
+    chunks: list[FullSource], scanned_files: set[str]
+) -> None:
 
     with open(processed / "chunks.json", "r") as f:
         old_chunks = json.load(f)
@@ -186,7 +198,9 @@ def build_index_cache(chunks: list[FullSource], scanned_files: set[str]):
     updated_chunks.extend(chunks)
 
     with open(processed / "chunks.json", "w") as f:
-        json.dump([x.model_dump(mode="json") for x in updated_chunks], f, indent=4)
+        json.dump(
+            [x.model_dump(mode="json") for x in updated_chunks], f, indent=4
+        )
 
     if not updated_chunks:
         return

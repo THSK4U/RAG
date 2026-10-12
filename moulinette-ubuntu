@@ -1,0 +1,11 @@
+#!/bin/bash
+DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ -f "$DIR/moulinette/moulinette-ubuntu.real" ]; then
+    REAL="$DIR/moulinette/moulinette-ubuntu.real"
+elif [ -f "$DIR/moulinette-ubuntu.real" ]; then
+    REAL="$DIR/moulinette-ubuntu.real"
+else
+    echo "moulinette-ubuntu.real not found" >&2
+    exit 1
+fi
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libreadline.so.8 exec "$REAL" "$@"

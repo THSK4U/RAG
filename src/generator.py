@@ -3,6 +3,7 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from .models import (
+    FullSource,
     MinimalAnswer,
     MinimalSource,
     StudentSearchResults,
@@ -11,7 +12,7 @@ from .models import (
 
 
 class Generator:
-    def __init__(self):
+    def __init__(self) -> None:
         self.model_name = "Qwen/Qwen3-0.6B"
 
         # load the tokenizer and the model
@@ -22,7 +23,7 @@ class Generator:
         self.model.eval()
 
     @staticmethod
-    def bulid_context(chunks):
+    def bulid_context(chunks: list[FullSource] | list[MinimalSource]) -> str:
         parts = []
         for chunk in chunks:
             first_char = chunk.first_character_index
@@ -45,7 +46,7 @@ class Generator:
         for s in tqdm(dataset.search_results, desc="Answering"):
             context = self.bulid_context(s.retrieved_sources[:3])
             ans = self.generate_answer(context, s.question)
-            retriver_convert = [
+            retriver_convert: list[FullSource | MinimalSource] = [
                 MinimalSource.model_validate(src, from_attributes=True)
                 for src in s.retrieved_sources
             ]
@@ -73,16 +74,17 @@ class Generator:
 
         print("DONE!")
 
-    def generate_answer(self, context, prompt):
-
+    def generate_answer(self, context: str, prompt: str) -> str:
         # prepare the model input
         role = (
             "Answer the question directly using ONLY the provided context.\n"
             "Rules:\n"
-            "- If the answer cannot be found in the context, respond EXACTLY with: 'Information not found in the context.'\n"
+            "- If the answer cannot be found in the context, respond EXACTLY "
+            "with: 'Information not found in the context.'\n"
             "- Do not use outside knowledge or make assumptions.\n"
             "- Be concise, factual, and to the point (1 to 2 sentences).\n"
-            "- Extract exact values, flags, class names, or HTTP endpoints directly from the text."
+            "- Extract exact values, flags, class names, or HTTP endpoints "
+            "directly from the text."
         )
         user_ = f"Context:\n{context}\nQuestion:\n{prompt}\n Direct Answer:"
 
@@ -94,30 +96,25 @@ class Generator:
             messages,
             tokenize=False,
             add_generation_prompt=True,
-            enable_thinking=False,  # Switches between thinking and non-thinking modes. Default is True.
+            enable_thinking=False,
         )
-        model_inputs = self.tokenizer(text, return_tensors="pt").to(self.model.device)
+        model_inputs = self.tokenizer(text, return_tensors="pt").to(
+            self.model.device
+        )
 
         # conduct text completion
         with torch.inference_mode():
-            generated_ids = self.model.generate(
+            generated_ids = self.model.generate(  # type: ignore[misc]
                 **model_inputs,
                 max_new_tokens=128,
                 do_sample=False,
                 repetition_penalty=1.1,
             )
-        output_ids = generated_ids[0][len(model_inputs.input_ids[0]) :].tolist()
+        output_ids = generated_ids[0][
+            len(model_inputs.input_ids[0]):
+        ].tolist()
 
-        # # parsing thinking content
-        # try:
-        #     # rindex finding 151668 (</think>)
-        #     index = len(output_ids) - output_ids[::-1].index(151668)
-        # except ValueError:
-        #     index = 0
-
-        # thinking_content = self.tokenizer.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
-        content = self.tokenizer.decode(output_ids, skip_special_tokens=True).strip()
-
-        # print("thinking content:", thinking_content)
-        # print("content:", content)
-        return content
+        content = self.tokenizer.decode(output_ids, skip_special_tokens=True)
+        if isinstance(content, list):
+            content = " ".join(content)
+        return str(content)
