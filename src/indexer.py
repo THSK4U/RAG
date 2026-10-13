@@ -1,7 +1,3 @@
-# 1. يجد كل ملفات .md و .py في vllm-0.10.1
-# 2. يستدعي chunker على كل ملف — بشكل متوازي (Parallel)
-# 3. يحفظ كل الـ chunks في data/processed/chunks.json
-# 4. يبني الـ BM25 index ويحفظه
 import hashlib
 import json
 import re
@@ -29,6 +25,14 @@ except (FileNotFoundError, json.JSONDecodeError):
 
 
 def calculate_file_hash(file_path: str | Path) -> bool:
+    """Check if file hash has changed and update cache.
+
+    Args:
+        file_path: Path to the target file.
+
+    Returns:
+        bool: True if file was modified or new, False otherwise.
+    """
     file_path = str(file_path)
 
     with open(file_path, "rb") as f:
@@ -45,12 +49,22 @@ def calculate_file_hash(file_path: str | Path) -> bool:
 
 
 def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
+    """Scan raw directory, chunk markdown and code, and build index.
+
+    Returns:
+        tuple[list[FullSource], list[FullSource]]: Markdown and Python chunks.
+    """
     full_rebuild = False
 
     chunks_path = processed / "chunks.json"
     if not chunks_path.exists() or chunks_path.stat().st_size <= 3:
         with open(processed / "chunks.json", "w") as f:
-            json.dump({}, f)
+            json.dump([{},{}], f)
+            full_rebuild = True
+    else:
+        with open(processed / "chunks.json", "r") as f:
+            content = json.load(f)[0]
+        if content["chunk_size"] != config.max_chunk_size:
             full_rebuild = True
 
     file_hashes_cache_path = processed / "file_hashes.json"
@@ -85,7 +99,6 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
             if "tests" not in f.parts and not f.name.startswith("test_")
             if calculate_file_hash(f) or full_rebuild
         ]
-
         workers = 4
 
         md: list = []
@@ -128,12 +141,16 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
         raise Exception(f"Invalid dataset: {e}\n")
 
 
-# class FullSource(BaseModel):
-#     file_path: str
-#     first_character_index: int
-#     last_character_index: int
-#     metadata: MarkdownMetadata | PythonMetadata
 def build_from_text(chunk: FullSource, content: str) -> str:
+    """Format a text/markdown chunk with title and header metadata.
+
+    Args:
+        chunk: Chunk data and position metadata.
+        content: Raw file content string.
+
+    Returns:
+        str: Formatted chunk text for indexing.
+    """
     first_char = chunk.first_character_index
     last_char = chunk.last_character_index
     meta = chunk.metadata
@@ -151,6 +168,15 @@ def build_from_text(chunk: FullSource, content: str) -> str:
 
 
 def build_from_code(chunk: FullSource, content: str) -> str:
+    """Format a Python code chunk with type, name, imports, and globals.
+
+    Args:
+        chunk: Chunk data and position metadata.
+        content: Raw file content string.
+
+    Returns:
+        str: Formatted code chunk text for indexing.
+    """
     first_char = chunk.first_character_index
     last_char = chunk.last_character_index
     meta = chunk.metadata
@@ -174,6 +200,14 @@ def build_from_code(chunk: FullSource, content: str) -> str:
 
 
 def tokenize(text: str) -> list[str]:
+    """Tokenize and clean text into lowercase words without stopwords.
+
+    Args:
+        text: Input text string.
+
+    Returns:
+        list[str]: Filtered list of clean tokens.
+    """
     text = re.sub(r"([a-z])([A-Z])", r"\1 \2", text)
     text = text.replace("_", " ")
     text = re.sub(r"[^a-zA-Z0-9\s]", " ", text)
@@ -185,9 +219,14 @@ def tokenize(text: str) -> list[str]:
 def build_index_cache(
     chunks: list[FullSource], scanned_files: set[str]
 ) -> None:
+    """Build and persist BM25 and semantic embeddings cache.
 
+    Args:
+        chunks: Newly scanned FullSource chunks.
+        scanned_files: Set of scanned file paths.
+    """
     with open(processed / "chunks.json", "r") as f:
-        old_chunks = json.load(f)
+        old_chunks = json.load(f)[1]
 
     updated_chunks = [
         FullSource.model_validate(c)
@@ -199,7 +238,10 @@ def build_index_cache(
 
     with open(processed / "chunks.json", "w") as f:
         json.dump(
-            [x.model_dump(mode="json") for x in updated_chunks], f, indent=4
+            [{"chunk_size": config.max_chunk_size}]
+            + [[x.model_dump(mode="json") for x in updated_chunks]],
+            f,
+            indent=4,
         )
 
     if not updated_chunks:

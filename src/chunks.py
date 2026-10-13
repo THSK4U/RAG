@@ -1,7 +1,3 @@
-# للـ .md: يقطّع حسب العناوين ## و ###
-# للـ .py: يقطّع حسب functions و classes (AST)
-# يضمن أن كل chunk ≤ 2000 حرف
-# تأكد من hash الخاص بالملف
 import ast
 import re
 from itertools import accumulate
@@ -16,6 +12,14 @@ from .models import (
 
 
 def text_strategies(file: str) -> list[FullSource]:
+    """Split Markdown/text documents into chunks by headers or max size.
+
+    Args:
+        file: Path to the text or Markdown file.
+
+    Returns:
+        list[FullSource]: List of extracted document chunks.
+    """
     chunks = []
 
     with open(file, "r") as f:
@@ -57,7 +61,6 @@ def text_strategies(file: str) -> list[FullSource]:
                     ),
                     first_character_index=start,
                     last_character_index=end,
-                    # text=selected_text,
                 )
             )
         else:
@@ -89,7 +92,6 @@ def text_strategies(file: str) -> list[FullSource]:
                             ),
                             first_character_index=new_start,
                             last_character_index=end_chunk,
-                            # text=content[new_start:end_chunk],
                         )
                     )
                     segment = content[new_start:end_chunk]
@@ -122,7 +124,6 @@ def text_strategies(file: str) -> list[FullSource]:
                             ),
                             first_character_index=new_start,
                             last_character_index=end,
-                            # text=content[new_start:end],
                         )
                     )
                     new_start = end
@@ -131,6 +132,14 @@ def text_strategies(file: str) -> list[FullSource]:
 
 
 def code_strategies(file: str) -> list[FullSource]:
+    """Parse Python source files into code chunks using AST.
+
+    Args:
+        file: Path to the Python source file.
+
+    Returns:
+        list[FullSource]: List of extracted Python code chunks.
+    """
     chunks = []
     imports_list_total = {}
     global_list_total = []
@@ -235,7 +244,6 @@ def code_strategies(file: str) -> list[FullSource]:
                     ),
                     first_character_index=first_char,
                     last_character_index=last_char,
-                    # text=content[first_char:last_char],
                 )
             )
         else:

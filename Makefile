@@ -44,6 +44,3 @@ lint:
 	--ignore-missing-imports \
 	--disallow-untyped-defs \
 	--check-untyped-defs
-
-a:
-	@source .venv/bin/activate.fish

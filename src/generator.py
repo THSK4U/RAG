@@ -12,7 +12,10 @@ from .models import (
 
 
 class Generator:
+    """Answer generator using a language model over retrieved context."""
+
     def __init__(self) -> None:
+        """Initialize tokenizer and model for answer generation."""
         self.model_name = "Qwen/Qwen3-0.6B"
 
         # load the tokenizer and the model
@@ -24,6 +27,14 @@ class Generator:
 
     @staticmethod
     def bulid_context(chunks: list[FullSource] | list[MinimalSource]) -> str:
+        """Build concatenated context text from source chunks.
+
+        Args:
+            chunks: List of retrieved source chunks.
+
+        Returns:
+            str: Combined context text with file paths.
+        """
         parts = []
         for chunk in chunks:
             first_char = chunk.first_character_index
@@ -37,7 +48,12 @@ class Generator:
     def answer_dataset(
         self, student_search_results_path: str, save_directory: str
     ) -> None:
+        """Generate answers for a dataset of search results.
 
+        Args:
+            student_search_results_path: Path to input search results JSON.
+            save_directory: Destination directory to save answer results JSON.
+        """
         with open(student_search_results_path) as f:
             dataset = StudentSearchResults.model_validate_json(f.read())
 
@@ -75,7 +91,16 @@ class Generator:
         print("DONE!")
 
     def generate_answer(self, context: str, prompt: str) -> str:
-        # prepare the model input
+        """Generate an answer using context and query.
+
+        Args:
+            context: Retrieved context text.
+            prompt: User question or query.
+
+        Returns:
+            str: Generated concise answer.
+        """
+
         role = (
             "Answer the question directly using ONLY the provided context.\n"
             "Rules:\n"

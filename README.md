@@ -1,3 +1,5 @@
+*This project has been created as part of the 42 curriculum by tsellak.*
+
 # RAG Against the Machine
 
 A lightweight and fast Retrieval-Augmented Generation (RAG) system built to index and answer questions about the **vLLM** project documentation and codebase.

@@ -18,7 +18,10 @@ from .models import (
 
 
 class Retriever:
+    """Hybrid retriever combining BM25 lexical and semantic search."""
+
     def __init__(self) -> None:
+        """Load BM25 index, chunk mappings, cache, and embeddings."""
         self.processed = Path(config.processed_dir)
         self.embedder = Embedding().encode_query
 
@@ -26,14 +29,23 @@ class Retriever:
             self.bm25 = pickle.load(f)
 
         with open(self.processed / "chunks.json") as f:
-            self.chunks = json.load(f)
+            self.chunks = json.load(f)[1]
 
         with open(self.processed / "query_cache.json", "r") as f:
             self.query_cache = json.load(f)
 
         self.semantic = np.load(self.processed / "embeddings.npy")
 
-    def search(self, query: str, k: int = 5) -> list[FullSource]:
+    def search_fn(self, query: str, k: int = 5) -> list[FullSource]:
+        """Search top-k relevant source chunks using hybrid RRF scoring.
+
+        Args:
+            query: The user query string.
+            k: Number of top results to retrieve.
+
+        Returns:
+            list[FullSource]: Top-k retrieved chunks.
+        """
 
         cache_key = f"{query.strip().lower()}"
         if (
@@ -81,19 +93,24 @@ class Retriever:
         with open(self.processed / "query_cache.json", "w") as f:
             json.dump(self.query_cache, f, indent=2)
 
-        # print(" Query cache Done! processed/query_cache.json")
         return results
 
-    def search_dataset(
+    def search_dataset_fn(
         self, dataset_path: str, k: int, save_directory: str
     ) -> None:
+        """Run search across all questions in a dataset and save results.
 
+        Args:
+            dataset_path: Path to input RagDataset JSON file.
+            k: Number of sources to retrieve per question.
+            save_directory: Directory where result JSON is saved.
+        """
         with open(dataset_path) as f:
             dataset = RagDataset.model_validate_json(f.read())
 
         all_results = []
         for q in tqdm(dataset.rag_questions, desc="Searching"):
-            sources = self.search(q.question, k=k)
+            sources = self.search_fn(q.question, k=k)
             retrieved_list: list[FullSource | MinimalSource] = [
                 s for s in sources
             ]
