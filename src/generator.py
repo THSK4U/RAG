@@ -60,7 +60,7 @@ class Generator:
         answers = []
 
         for s in tqdm(dataset.search_results, desc="Answering"):
-            context = self.bulid_context(s.retrieved_sources[:3])
+            context = self.bulid_context(s.retrieved_sources)
             ans = self.generate_answer(context, s.question)
             retriver_convert: list[FullSource | MinimalSource] = [
                 MinimalSource.model_validate(src, from_attributes=True)
@@ -102,7 +102,7 @@ class Generator:
         """
 
         role = (
-            "Answer the question directly using ONLY the provided context.\n"
+            "Answer using ONLY the provided context.\n"
             "Rules:\n"
             "- If the answer cannot be found in the context, respond EXACTLY "
             "with: 'Information not found in the context.'\n"
@@ -111,8 +111,12 @@ class Generator:
             "- Extract exact values, flags, class names, or HTTP endpoints "
             "directly from the text."
         )
-        user_ = f"Context:\n{context}\nQuestion:\n{prompt}\n Direct Answer:"
-
+        user_ = (
+            f"Question: {prompt}\n\n"
+            f"Context:\n{context}\n\n"
+            f"Based on the context above, answer the question: {prompt}\n"
+            f"Answer:"
+        )
         messages = [
             {"role": "system", "content": role},
             {"role": "user", "content": user_},
@@ -127,12 +131,13 @@ class Generator:
             self.model.device
         )
 
-        # conduct text completion
+        # Greedy deterministic decoding
         with torch.inference_mode():
             generated_ids = self.model.generate(  # type: ignore[misc]
                 **model_inputs,
                 max_new_tokens=128,
                 do_sample=False,
+                temperature=1.0,
                 repetition_penalty=1.1,
             )
         output_ids = generated_ids[0][

@@ -4,9 +4,7 @@ from itertools import accumulate
 
 from .models import (
     FullSource,
-    FunctionType,
     MarkdownMetadata,
-    PythonMetadata,
     config,
 )
 
@@ -44,9 +42,6 @@ def text_strategies(file: str) -> list[FullSource]:
                 title = header_text
 
         selected_text = content[start:end]
-
-        if selected_text.strip() == f"# {title}":
-            continue
 
         if (
             len(selected_text) <= config.max_chunk_size
@@ -94,25 +89,10 @@ def text_strategies(file: str) -> list[FullSource]:
                             last_character_index=end_chunk,
                         )
                     )
-                    segment = content[new_start:end_chunk]
 
-                    last_newline = segment.rfind("\n")
-                    last_space = segment.rfind(" ")
+                    overlap = min(150, max(10, config.max_chunk_size // 5))
+                    new_start = max(new_start + 1, end_chunk - overlap)
 
-                    if last_newline > 0:
-                        proposed_start = new_start + last_newline + 1
-                        if (end_chunk - proposed_start) > 100:
-                            new_start = end_chunk - 100
-                        else:
-                            new_start = proposed_start
-                    elif last_space > 0:
-                        proposed_start = new_start + last_space + 1
-                        if (end_chunk - proposed_start) > 100:
-                            new_start = end_chunk - 100
-                        else:
-                            new_start = proposed_start
-                    else:
-                        new_start = end_chunk
 
                 else:
                     chunks.append(
@@ -141,8 +121,6 @@ def code_strategies(file: str) -> list[FullSource]:
         list[FullSource]: List of extracted Python code chunks.
     """
     chunks = []
-    imports_list_total = {}
-    global_list_total = []
     start_line = 0
     end_line = 0
     parts = []
@@ -159,89 +137,24 @@ def code_strategies(file: str) -> list[FullSource]:
         return []
 
     for node in tree.body:
-        functiontype: FunctionType | None = None
         obj_node: ast.FunctionDef | ast.ClassDef | None = None
 
-        if isinstance(node, ast.Import):
-            for body in node.names:
-                if body.name not in imports_list_total:
-                    imports_list_total[body.name] = f"import {body.name}"
+        if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+            obj_node = node
+            start_line = node.lineno
+            end_line = node.end_lineno or node.lineno
 
-        elif isinstance(node, ast.ImportFrom):
-            for body in node.names:
-                if body.asname:
-                    key = body.asname
-                    statement = (
-                        f"from {node.module} import {body.name} "
-                        f"as {body.asname}"
-                    )
-                else:
-                    key = body.name
-                    statement = f"from {node.module} import {body.name}"
-                if key not in imports_list_total:
-                    imports_list_total[key] = statement
+        if obj_node is not None:
+            parts.append((obj_node, start_line, end_line))
 
-        elif isinstance(node, ast.FunctionDef):
-            if node.name:
-                obj_node = node
-                functiontype = FunctionType.FUNCTION
-                start_line = node.lineno
-                end_line = node.end_lineno or node.lineno
-
-        elif isinstance(node, ast.ClassDef):
-            if node.name:
-                obj_node = node
-                functiontype = FunctionType.CLASS
-                start_line = node.lineno
-                end_line = node.end_lineno or node.lineno
-        else:
-            global_list_total.append(node)
-
-        if obj_node is not None and functiontype is not None:
-            parts.append((obj_node, functiontype, start_line, end_line))
-
-    global_cache = []
-    for node in global_list_total:
-        segment = ast.get_source_segment(content, node)
-        var_name = ""
-        if isinstance(node, ast.Assign):
-            for target in node.targets:
-                if isinstance(target, ast.Name):
-                    var_name = target.id
-                    break
-        global_cache.append((var_name, segment))
-
-    for obj_node, functiontype, start_line, end_line in parts:
+    for obj_node, start_line, end_line in parts:
         first_char = cum_offsets[start_line - 1]
         last_char = cum_offsets[end_line]
 
-        used_names = {
-            node.id
-            for node in ast.walk(obj_node)
-            if isinstance(node, ast.Name)
-        }
-
-        imports_list = [
-            import_
-            for from_, import_ in imports_list_total.items()
-            if from_ in used_names
-        ]
-
-        global_list = [
-            segment
-            for var_name, segment in global_cache
-            if var_name and var_name in used_names and segment is not None
-        ]
         if (last_char - first_char) <= config.max_chunk_size:
             chunks.append(
                 FullSource(
                     file_path=file,
-                    metadata=PythonMetadata(
-                        type=functiontype,
-                        name=obj_node.name,
-                        imports=imports_list,
-                        globals=global_list,
-                    ),
                     first_character_index=first_char,
                     last_character_index=last_char,
                 )
@@ -262,12 +175,6 @@ def code_strategies(file: str) -> list[FullSource]:
                     chunks.append(
                         FullSource(
                             file_path=file,
-                            metadata=PythonMetadata(
-                                type=functiontype,
-                                name=obj_node.name,
-                                imports=imports_list,
-                                globals=global_list,
-                            ),
                             first_character_index=new_start,
                             last_character_index=end_chunk,
                         )
@@ -277,12 +184,6 @@ def code_strategies(file: str) -> list[FullSource]:
                     chunks.append(
                         FullSource(
                             file_path=file,
-                            metadata=PythonMetadata(
-                                type=functiontype,
-                                name=obj_node.name,
-                                imports=imports_list,
-                                globals=global_list,
-                            ),
                             first_character_index=new_start,
                             last_character_index=last_char,
                         )

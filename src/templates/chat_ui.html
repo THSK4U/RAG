@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}RAG Chatbot{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-2xl space-y-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="space-y-2">
+    {% for category, message in messages %}
+    <div class="p-3 rounded {{
+      'bg-green-900 text-green-100' if category == 'success' else
+      'bg-red-900 text-red-100' if category == 'error' else
+      'bg-yellow-900 text-yellow-100' if category == 'warning' else
+      ''
+    }}">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <form action="/" method="post" class="chat-input-bar">
+    <input type="text" name="query" placeholder="Ask a question..." required>
+    <input type="number" name="k" min="0" placeholder="k">
+    <button type="submit">Send</button>
+  </form>
+</div>
+{% endblock %}

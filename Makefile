@@ -10,8 +10,14 @@ run:
 	@$(PYTHON) -m $(NAME)
 
 cache:
-	export UV_CACHE_DIR=/tmp/uv-cache
-	export UV_PROJECT_ENVIRONMENT="/home/tsellak/goinfre/uv"
+	@echo "Linking to goinfre..."
+	@mkdir -p /home/tsellak/goinfre/uv /home/tsellak/goinfre/huggingface /home/tsellak/goinfre/rag_venv
+	@rm -rf ~/.cache/uv ~/.cache/huggingface .venv
+	@ln -sfn /home/tsellak/goinfre/uv ~/.cache/uv
+	@ln -sfn /home/tsellak/goinfre/huggingface ~/.cache/huggingface
+	@ln -sfn /home/tsellak/goinfre/rag_venv .venv
+	@uv sync
+	@echo "Cache and venv successfully linked to goinfre!"
 
 molicode:
 	./moulinette/moulinette-ubuntu evaluate_student_search_results \

@@ -4,8 +4,27 @@ from typing import Any
 import fire
 
 from .evaluator import evaluate as evaluate_fn
+from .generator import Generator
 from .indexer import load_all_files
 from .models import config
+from .retrieval import Retriever
+
+
+def full_pipeline(query: str, k: int) -> str:
+    processed = Path(config.processed_dir)
+    processed.mkdir(parents=True, exist_ok=True)
+    load_all_files()
+
+    retriever = Retriever()
+    generator = Generator()
+
+    search_results = retriever.search_fn(query=query, k=k)
+
+    context = generator.bulid_context(search_results)
+
+    answer = generator.generate_answer(context, query)
+
+    return answer
 
 
 class CLI:
@@ -59,6 +78,7 @@ got {max_chunk_size}"
         processed = Path(config.processed_dir)
         processed.mkdir(parents=True, exist_ok=True)
         load_all_files()
+        print(f"Ingestion complete! Indices saved under {processed}")
 
     # • search <query> -k <int>
     # Return the top-k sources for a single query.
@@ -172,6 +192,8 @@ got {max_chunk_size}"
 if __name__ == "__main__":
     try:
         fire.Fire(CLI)
+        # ans = full_pipeline("what your name?", 10)
+        # print(ans)
     except (KeyboardInterrupt, EOFError):
         print("\nOperation cancelled by user.")
         exit(0)

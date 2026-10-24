@@ -1,7 +1,6 @@
 import hashlib
 import json
 import re
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 from tqdm import tqdm
@@ -10,9 +9,7 @@ from .chunks import code_strategies, text_strategies
 from .embedding import Embedding
 from .models import (
     FullSource,
-    FunctionType,
     MarkdownMetadata,
-    PythonMetadata,
     config,
 )
 
@@ -59,7 +56,7 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
     chunks_path = processed / "chunks.json"
     if not chunks_path.exists() or chunks_path.stat().st_size <= 3:
         with open(processed / "chunks.json", "w") as f:
-            json.dump([{},{}], f)
+            json.dump([{}, {}], f)
             full_rebuild = True
     else:
         with open(processed / "chunks.json", "r") as f:
@@ -99,36 +96,19 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
             if "tests" not in f.parts and not f.name.startswith("test_")
             if calculate_file_hash(f) or full_rebuild
         ]
-        workers = 4
 
         md: list = []
         py: list = []
         processed_file = []
         if txt_files:
             processed_file.extend(txt_files)
-            with ProcessPoolExecutor(max_workers=workers) as executor:
-                futures = {
-                    executor.submit(text_strategies, f): f for f in txt_files
-                }
-                for future in tqdm(
-                    as_completed(futures), desc="Read Text Files"
-                ):
-                    result = future.result()
-                    if result:
-                        md.extend(result)
+            for f in tqdm(sorted(txt_files), desc="TEXT FILESٌُِ READ"):
+                md.extend(text_strategies(f))
 
         if code_files:
             processed_file.extend(code_files)
-            with ProcessPoolExecutor(max_workers=workers) as executor:
-                futures = {
-                    executor.submit(code_strategies, f): f for f in code_files
-                }
-                for future in tqdm(
-                    as_completed(futures), desc="Read Code Files"
-                ):
-                    result = future.result()
-                    if result:
-                        py.extend(result)
+            for f in tqdm(sorted(code_files), desc="CODE FILESٌُِ READ"):
+                py.extend(code_strategies(f))
 
         if processed_file:
             build_index_cache(md + py, set(processed_file))
@@ -179,20 +159,8 @@ def build_from_code(chunk: FullSource, content: str) -> str:
     """
     first_char = chunk.first_character_index
     last_char = chunk.last_character_index
-    meta = chunk.metadata
 
     parts = []
-    if isinstance(meta, PythonMetadata):
-        if meta.type:
-            if meta.type == FunctionType.CLASS:
-                parts.append(f"Class: {meta.name}")
-            else:
-                parts.append(f"function: {meta.name}")
-
-        if meta.imports:
-            parts.append(f"imports: {meta.imports}")
-        if meta.globals:
-            parts.append(f"globals: {meta.globals}")
 
     parts.append(content[first_char:last_char])
 
@@ -228,11 +196,13 @@ def build_index_cache(
     with open(processed / "chunks.json", "r") as f:
         old_chunks = json.load(f)[1]
 
-    updated_chunks = [
-        FullSource.model_validate(c)
-        for c in old_chunks
-        if c["file_path"] not in scanned_files
-    ]
+    updated_chunks = []
+    keep_indices: list[int] = []
+
+    for idx, c in enumerate(old_chunks):
+        if c["file_path"] not in scanned_files:
+            keep_indices.append(idx)
+            updated_chunks.append(FullSource.model_validate(c))
 
     updated_chunks.extend(chunks)
 
@@ -244,34 +214,33 @@ def build_index_cache(
             indent=4,
         )
 
-    if not updated_chunks:
-        return
-
     corpus: list[list[str]] = []
-    file_cash = {}
+    file_cache = {}
     raw_text = []
 
     if not updated_chunks:
         return
     for chunk in updated_chunks:
         file_path = chunk.file_path
-        if file_path not in file_cash:
+        if file_path not in file_cache:
             with open(file_path, "r") as f:
-                file_cash[file_path] = f.read()
+                file_cache[file_path] = f.read()
 
-        content = file_cash[file_path]
-        metadata = chunk.metadata
-        if isinstance(metadata, PythonMetadata):
-            index_text = build_from_code(chunk, content)
-        else:
+        content = file_cache[file_path]
+        if isinstance(chunk.metadata, MarkdownMetadata):
             index_text = build_from_text(chunk, content)
+        else:
+            index_text = build_from_code(chunk, content)
         ##
         raw_text.append(index_text)
-        tokens = tokenize(index_text)
-        corpus.append(tokens)
+        corpus.append(tokenize(index_text))
+
+    num_new = len(chunks)
+    new_raw_text = raw_text[-num_new:] if num_new > 0 else []
 
     emd = Embedding()
     emd.lexical(corpus)
-    emd.Semantic_embidding(raw_text)
+
+    emd.Semantic_embidding(raw_text, new_raw_text, keep_indices)
 
     print(f"Index built: {len(updated_chunks)} chunks")

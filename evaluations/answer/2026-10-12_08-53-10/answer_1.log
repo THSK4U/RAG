@@ -1,1 +1,0 @@
-The framework that can be used to run and scale vLLM to multiple service replicas on clouds and Kubernetes is **Skypilot**.

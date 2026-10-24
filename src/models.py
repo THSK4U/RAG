@@ -1,15 +1,7 @@
 import uuid
-from enum import Enum
 from typing import List
 
 from pydantic import BaseModel, Field
-
-
-class FunctionType(str, Enum):
-    """Enumeration of supported Python code construct types."""
-
-    CLASS = "class"
-    FUNCTION = "def"
 
 
 class MarkdownMetadata(BaseModel):
@@ -19,30 +11,18 @@ class MarkdownMetadata(BaseModel):
     header: str
 
 
-class PythonMetadata(BaseModel):
-    """Metadata schema for Python code constructs."""
-
-    type: FunctionType
-    name: str
-    imports: list[str] = []
-    globals: list[str] = []
-
-
-class FullSource(BaseModel):
-    """Detailed source chunk schema including metadata."""
-
-    file_path: str
-    first_character_index: int
-    last_character_index: int
-    metadata: MarkdownMetadata | PythonMetadata
-
-
 class MinimalSource(BaseModel):
     """Minimal source chunk representation without metadata."""
 
     file_path: str
     first_character_index: int
     last_character_index: int
+
+
+class FullSource(MinimalSource):
+    """Detailed source chunk schema including metadata."""
+
+    metadata: MarkdownMetadata | None = None
 
 
 class UnansweredQuestion(BaseModel):

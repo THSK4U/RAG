@@ -29,19 +29,46 @@ class Embedding:
         with open(self.processed / "bm25_index.pkl", "wb") as f:
             pickle.dump(bm25, f)
 
-    def Semantic_embidding(self, cropus: list[str]) -> None:
+    def Semantic_embidding(
+        self,
+        all_texts: list[str],
+        new_texts: list[str],
+        keep_indices: list[int] | None = None,
+    ) -> None:
         """Build and save normalized dense embeddings for semantic search.
 
+        Uses incremental mode when keep_indices is provided and an existing
+        embeddings file is present: keeps old vectors for unchanged chunks,
+        encodes only the new ones, then concatenates.
+
         Args:
-            cropus: List of raw text chunks to embed.
+            all_texts: Full list of raw text chunks (used for full rebuild).
+            new_texts: Only the newly added/modified chunks to encode.
+            keep_indices: Indices into the old embeddings array to preserve.
         """
-        embeddings = self.model.encode(
-            cropus,
-            batch_size=64,
-            show_progress_bar=True,
-            normalize_embeddings=True,
-        )
-        np.save(self.processed / "embeddings", embeddings)
+        embeddings_path = self.processed / "embeddings.npy"
+        if keep_indices is not None and embeddings_path.exists():
+            old_embeddings = np.load(embeddings_path)
+            kept = old_embeddings[keep_indices]
+            if new_texts:
+                new_embs = self.model.encode(
+                    new_texts,
+                    batch_size=64,
+                    show_progress_bar=True,
+                    normalize_embeddings=True,
+                )
+                final = np.vstack([kept, new_embs])
+            else:
+                final = kept
+        else:
+            final = self.model.encode(
+                all_texts,
+                batch_size=64,
+                show_progress_bar=True,
+                normalize_embeddings=True,
+            )
+
+        np.save(self.processed / "embeddings", final)
 
     def encode_query(self, query: str) -> np.ndarray:
         """Encode a single search query into a normalized vector.

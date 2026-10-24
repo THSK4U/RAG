@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}RAG Chatbot{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' }</script>
+  <style>
+    :root {
+      --s1: 8px;
+      --border: #333;
+    }
+
+    body {
+      background: #000;
+    }
+
+    .chat-input-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--s1);
+      background: #212121;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 8px 8px 20px;
+    }
+
+    .chat-input-bar input[type="text"] {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #f3f4f6;
+      font-size: 0.95rem;
+    }
+
+    .chat-input-bar input[type="text"]::placeholder {
+      color: #6b7280;
+    }
+
+    .chat-input-bar input[type="number"] {
+      width: 52px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #f3f4f6;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .chat-input-bar input[type="number"]::placeholder {
+      color: #6b7280;
+    }
+
+    .chat-input-bar button[type="submit"] {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 20px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .chat-input-bar button[type="submit"]:hover {
+      background: #1d4ed8;
+    }
+  </style>
+  {% block extrahead %}{% endblock %}
+</head>
+<body class="text-gray-100 min-h-screen">
+  <div class="min-h-screen flex items-center justify-center p-4">
+    {% block content %}{% endblock %}
+  </div>
+  {% block extrajs %}{% endblock %}
+</body>
+</html>
