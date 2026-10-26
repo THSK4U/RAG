@@ -49,17 +49,25 @@ class Embedding:
         embeddings_path = self.processed / "embeddings.npy"
         if keep_indices is not None and embeddings_path.exists():
             old_embeddings = np.load(embeddings_path)
-            kept = old_embeddings[keep_indices]
-            if new_texts:
-                new_embs = self.model.encode(
-                    new_texts,
+            if keep_indices and max(keep_indices) >= len(old_embeddings):
+                final = self.model.encode(
+                    all_texts,
                     batch_size=64,
                     show_progress_bar=True,
                     normalize_embeddings=True,
                 )
-                final = np.vstack([kept, new_embs])
             else:
-                final = kept
+                kept = old_embeddings[keep_indices]
+                if new_texts:
+                    new_embs = self.model.encode(
+                        new_texts,
+                        batch_size=64,
+                        show_progress_bar=True,
+                        normalize_embeddings=True,
+                    )
+                    final = np.vstack([kept, new_embs])
+                else:
+                    final = kept
         else:
             final = self.model.encode(
                 all_texts,

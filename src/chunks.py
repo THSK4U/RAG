@@ -93,7 +93,6 @@ def text_strategies(file: str) -> list[FullSource]:
                     overlap = min(150, max(10, config.max_chunk_size // 5))
                     new_start = max(new_start + 1, end_chunk - overlap)
 
-
                 else:
                     chunks.append(
                         FullSource(
