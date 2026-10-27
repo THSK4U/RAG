@@ -1,6 +1,7 @@
 import hashlib
 import json
 import re
+import os
 from pathlib import Path
 
 from tqdm import tqdm
@@ -141,7 +142,6 @@ def build_from_text(chunk: FullSource, content: str) -> str:
             parts.append(meta.title)
         if meta.header and meta.title != meta.header:
             parts.append(meta.header)
-
     parts.append(content[first_char:last_char])
 
     return "\n".join(parts)
@@ -157,11 +157,12 @@ def build_from_code(chunk: FullSource, content: str) -> str:
     Returns:
         str: Formatted code chunk text for indexing.
     """
+    path = chunk.file_path
     first_char = chunk.first_character_index
     last_char = chunk.last_character_index
 
     parts = []
-
+    parts.append(os.path.basename(path))
     parts.append(content[first_char:last_char])
 
     return "\n".join(parts)
