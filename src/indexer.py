@@ -1,7 +1,7 @@
 import hashlib
 import json
-import re
 import os
+import re
 from pathlib import Path
 
 from tqdm import tqdm
@@ -57,12 +57,12 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
     chunks_path = processed / "chunks.json"
     if not chunks_path.exists() or chunks_path.stat().st_size <= 3:
         with open(processed / "chunks.json", "w") as f:
-            json.dump([{}, {}], f)
+            json.dump([{}, []], f)
             full_rebuild = True
     else:
         with open(processed / "chunks.json", "r") as f:
             content = json.load(f)[0]
-        if content["chunk_size"] != config.max_chunk_size:
+        if content.get("chunk_size", 0) != config.max_chunk_size:
             full_rebuild = True
 
     file_hashes_cache_path = processed / "file_hashes.json"
@@ -98,6 +98,8 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
             if calculate_file_hash(f) or full_rebuild
         ]
 
+        if full_rebuild and not txt_files and not code_files:
+            raise ValueError("No files found in raw data directory")
         md: list = []
         py: list = []
         processed_file = []
@@ -117,7 +119,7 @@ def load_all_files() -> tuple[list[FullSource], list[FullSource]]:
         return md, py
 
     except FileNotFoundError:
-        raise FileNotFoundError("vllm-0.10.1 dataset files not found.\n")
+        raise FileNotFoundError(f"{config.raw_dir} dataset files not found.\n")
     except Exception as e:
         raise Exception(f"Invalid dataset: {e}\n")
 
@@ -142,6 +144,7 @@ def build_from_text(chunk: FullSource, content: str) -> str:
             parts.append(meta.title)
         if meta.header and meta.title != meta.header:
             parts.append(meta.header)
+
     parts.append(content[first_char:last_char])
 
     return "\n".join(parts)
@@ -157,12 +160,11 @@ def build_from_code(chunk: FullSource, content: str) -> str:
     Returns:
         str: Formatted code chunk text for indexing.
     """
-    path = chunk.file_path
     first_char = chunk.first_character_index
     last_char = chunk.last_character_index
 
     parts = []
-    parts.append(os.path.basename(path))
+    parts.append(os.path.basename(chunk.file_path))
     parts.append(content[first_char:last_char])
 
     return "\n".join(parts)

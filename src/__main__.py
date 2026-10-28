@@ -11,6 +11,10 @@ from .retrieval import Retriever
 
 
 def full_pipeline(query: str, k: int) -> str:
+    raw_data = Path(config.raw_dir)
+    if not raw_data.is_dir():
+        raise FileNotFoundError(f"Raw data directory not found: {raw_data}")
+
     processed = Path(config.processed_dir)
     processed.mkdir(parents=True, exist_ok=True)
     load_all_files()
@@ -75,6 +79,11 @@ got {max_chunk_size}"
                 )
                 return
             config.max_chunk_size = max_chunk_size
+        raw_data = Path(config.raw_dir)
+        if not raw_data.is_dir():
+            raise FileNotFoundError(
+                f"Raw data directory not found: {raw_data}"
+            )
         processed = Path(config.processed_dir)
         processed.mkdir(parents=True, exist_ok=True)
         load_all_files()
@@ -109,7 +118,7 @@ got {max_chunk_size}"
             save_directory: Directory to store search results JSON.
             k: Number of sources to retrieve per query.
         """
-        if not Path(dataset_path).is_file() and not dataset_path.endswith(
+        if not Path(dataset_path).is_file() or not dataset_path.endswith(
             ".json"
         ):
             raise FileNotFoundError(
